@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liikluskaamera süsteem</title>
+    <title>TurvaGPS - Ohutu sõiduapp</title>
     <style>
         :root {
             --primary-color: #1a237e;
@@ -27,147 +27,130 @@
             background-color: #f5f5f5;
             color: var(--text-color);
             line-height: 1.6;
+            overflow: hidden;
         }
         
         header {
             background-color: var(--primary-color);
             color: white;
-            padding: 1rem 0;
+            padding: 0.75rem 0;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        
-        .app-description {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .app-description h2 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .feature-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .feature-card h3 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .feature-card i {
-            font-size: 2rem;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-            display: block;
-        }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .camera-section, .data-section {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .camera-section h2, .data-section h2 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-        
-        .camera-container {
             position: relative;
+            z-index: 1000;
+        }
+        
+        .app-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+            background-color: #e0e0e0;
+        }
+        
+        #map {
             width: 100%;
-            height: 300px;
-            background-color: #eee;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            height: 100%;
+            background: linear-gradient(135deg, #a5d6a7 0%, #81c784 100%);
+            position: relative;
             overflow: hidden;
         }
         
-        #camera-preview {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .map-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #2e7d32;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
-        .detection-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
+        .controls-panel {
+            width: 350px;
+            background-color: white;
+            padding: 1rem;
+            overflow-y: auto;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
         }
         
-        .detection-box {
-            position: absolute;
-            border: 2px solid var(--warning-color);
-            background-color: rgba(255, 87, 34, 0.2);
-            border-radius: 4px;
+        .user-location {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: var(--light-color);
+            border-radius: 8px;
+        }
+        
+        .location-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
             color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            font-weight: bold;
         }
         
-        .camera-controls {
+        .location-info h3 {
+            margin-bottom: 0.25rem;
+            color: var(--primary-color);
+        }
+        
+        .destination-input {
+            margin-bottom: 1.5rem;
+        }
+        
+        .destination-input h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .input-group {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
         }
         
         button {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1rem;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
         }
         
         button:hover {
             background-color: var(--dark-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
         }
         
         button.secondary {
@@ -186,540 +169,859 @@
             background-color: #e64a19;
         }
         
-        .speed-limit-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
-        .speed-limit-controls input {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 80px;
+        button:disabled:hover {
+            background-color: #cccccc;
+            transform: none;
         }
         
-        .detected-objects {
-            margin-top: 1.5rem;
+        .speed-display {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            border: 2px solid var(--accent-color);
         }
         
-        .object-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 0.5rem;
+        .current-speed {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
         }
         
-        .object-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem;
-            border-bottom: 1px solid #eee;
+        .speed-unit {
+            font-size: 1.2rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
         }
         
-        .object-item:last-child {
-            border-bottom: none;
-        }
-        
-        .object-speed {
+        .speed-limit {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
             font-weight: bold;
         }
         
         .speed-over {
-            color: var(--warning-color);
+            color: var(--warning-color) !important;
+            animation: pulse 1s infinite;
         }
         
-        .data-display {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
         
-        .data-card {
-            background-color: var(--light-color);
+        .route-info {
+            margin: 1rem 0;
             padding: 1rem;
+            background-color: var(--light-color);
             border-radius: 8px;
-            text-align: center;
+            border-left: 4px solid var(--accent-color);
         }
         
-        .data-card h3 {
-            color: var(--primary-color);
+        .route-info h3 {
             margin-bottom: 0.5rem;
+            color: var(--primary-color);
         }
         
-        .data-value {
-            font-size: 1.5rem;
+        .alerts-panel {
+            margin: 1rem 0;
+        }
+        
+        .alerts-panel h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background-color: #fff3e0;
+            border-left: 4px solid var(--warning-color);
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+        
+        .alert-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .alert-icon {
+            color: var(--warning-color);
             font-weight: bold;
-            color: var(--dark-color);
+            font-size: 1.2rem;
         }
         
-        .speed-limit-sign {
-            width: 80px;
-            height: 80px;
-            background-color: white;
-            border: 5px solid red;
+        .alert-item.police {
+            background-color: #e8eaf6;
+            border-left-color: var(--primary-color);
+        }
+        
+        .alert-item.police .alert-icon {
+            color: var(--primary-color);
+        }
+        
+        .alert-item.camera {
+            background-color: #e0f2f1;
+            border-left-color: var(--success-color);
+        }
+        
+        .alert-item.camera .alert-icon {
+            color: var(--success-color);
+        }
+        
+        .settings-panel {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+        }
+        
+        .settings-panel h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .map-marker {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent-color);
+            border: 3px solid white;
             border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
+            font-size: 0.8rem;
+            color: white;
             font-weight: bold;
-            color: red;
         }
         
-        .logs-section {
-            margin-top: 2rem;
+        .map-marker.user {
+            background-color: var(--accent-color);
+            width: 28px;
+            height: 28px;
+            z-index: 150;
+            animation: pulse 2s infinite;
         }
         
-        .logs-controls {
+        .map-marker.police {
+            background-color: var(--primary-color);
+            width: 20px;
+            height: 20px;
+        }
+        
+        .map-marker.camera {
+            background-color: var(--warning-color);
+            width: 18px;
+            height: 18px;
+        }
+        
+        .map-marker.destination {
+            background-color: #ff5722;
+            width: 24px;
+            height: 24px;
+            z-index: 120;
+        }
+        
+        .route-line {
+            position: absolute;
+            background-color: var(--accent-color);
+            height: 6px;
+            border-radius: 3px;
+            transform-origin: 0 0;
+            z-index: 50;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .speed-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 87, 34, 0.95);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+            animation: blink 0.8s infinite alternate;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 4px solid white;
+        }
+        
+        @keyframes blink {
+            from { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to { 
+                opacity: 0.8; 
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+        }
+        
+        .voice-alert {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
         }
         
-        #logs-content {
-            background-color: #f5f5f5;
+        .voice-alert:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        
+        .voice-alert.muted {
+            background-color: #757575;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
             padding: 1rem;
             border-radius: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-        
-        footer {
-            background-color: var(--dark-color);
-            color: white;
-            text-align: center;
-            padding: 1.5rem 0;
-            margin-top: 2rem;
-        }
-        
-        .alert {
-            padding: 0.75rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: none;
+            max-width: 300px;
         }
         
-        .alert.warning {
-            background-color: rgba(255, 87, 34, 0.2);
-            border: 1px solid var(--warning-color);
-            color: var(--warning-color);
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .controls-panel {
+                width: 100%;
+                height: 40vh;
+            }
+            
+            .map-container {
+                height: 60vh;
+            }
+            
+            .map-overlay {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>Liikluskaamera süsteem</h1>
-            <p>Tuvastab liikuvad objektid, mõõdab kiirust ja jälgib kiiruspiiranguid</p>
-        </div>
+        <h1>TurvaGPS - Ohutu sõiduapp</h1>
     </header>
     
-    <div class="container">
-        <section class="app-description">
-            <h2>Tere tulemast liikluskaamera süsteemi!</h2>
-            <p>See süsteem jälgib liiklust, tuvastab liikuvad sõidukid, mõõdab nende kiirust ja võrdleb seda kehtestatud kiiruspiiranguga. Süsteem salvestab kõik andmed ja võimaldab neid hiljem analüüsida.</p>
-        </section>
-        
-        <section class="features-grid">
-            <div class="feature-card">
-                <i>🚗</i>
-                <h3>Objekti tuvastamine</h3>
-                <p>Tuvastab liikuvad sõidukid teel ja märgistab need kaadris</p>
+    <div class="app-container">
+        <div class="map-container">
+            <div id="map">
+                <div class="map-overlay">
+                    <h2>GPS Kaart</h2>
+                    <p>Siin kuvatakse teie asukoht ja marsruut</p>
+                    <p id="map-coordinates">Laadimine...</p>
+                </div>
             </div>
-            <div class="feature-card">
-                <i>📊</i>
-                <h3>Kiiruse mõõtmine</h3>
-                <p>Mõõdab iga sõiduki kiiruse tegelikult km/h</p>
+            <div class="speed-warning" id="speed-warning">
+                <div>KIIRUSEÜLETUS!</div>
+                <div>Võta kiirust maha!</div>
             </div>
-            <div class="feature-card">
-                <i>🚧</i>
-                <h3>Kiiruspiirangud</h3>
-                <p>Jälgib kiiruspiiranguid ja märgistab ületajad</p>
+            <div class="voice-alert" id="voice-alert" title="Häälhoiatused">
+                🔊
             </div>
-            <div class="feature-card">
-                <i>📝</i>
-                <h3>Andmete salvestamine</h3>
-                <p>Salvestab kõik liiklusandmed logifaili hilisemaks analüüsiks</p>
+            <div class="notification" id="notification">
+                Sihtkoht määratud!
             </div>
-        </section>
-        
-        <div class="alert warning" id="speed-alert">
-            <strong>Hoiatus!</strong> Tuvastati kiiruspiirangu ületaja.
         </div>
         
-        <div class="main-content">
-            <section class="camera-section">
-                <h2>Kaamera vaade</h2>
-                
-                <div class="camera-container">
-                    <video id="camera-preview" autoplay muted></video>
-                    <div class="detection-overlay" id="detection-overlay"></div>
+        <div class="controls-panel">
+            <div class="user-location">
+                <div class="location-icon">📍</div>
+                <div class="location-info">
+                    <h3>Sinuke asukoht</h3>
+                    <p id="current-location">Laadimine...</p>
                 </div>
-                
-                <div class="camera-controls">
-                    <button id="start-camera">Käivita kaamera</button>
-                    <button id="start-detection" disabled>Alusta tuvastamist</button>
-                    <button id="stop-detection" disabled class="secondary">Peata tuvastamine</button>
-                    <button id="simulate-traffic" class="secondary">Simuleeri liiklust</button>
-                </div>
-                
-                <div class="speed-limit-controls">
-                    <label for="speed-limit-input">Kiiruspiirang (km/h):</label>
-                    <input type="number" id="speed-limit-input" value="50" min="20" max="120">
-                    <button id="set-speed-limit">Määra piirang</button>
-                </div>
-                
-                <div class="detected-objects">
-                    <h3>Tuvastatud sõidukid</h3>
-                    <div class="object-list" id="object-list">
-                        <p>Sõidukeid ei ole tuvastatud</p>
-                    </div>
-                </div>
-            </section>
+            </div>
             
-            <section class="data-section">
-                <h2>Liiklusandmed</h2>
-                
-                <div class="data-display">
-                    <div class="data-card">
-                        <h3>Kehtiv kiiruspiirang</h3>
-                        <div class="speed-limit-sign">
-                            <span id="current-speed-limit">50</span>
-                        </div>
-                        <p>km/h</p>
-                    </div>
-                    
-                    <div class="data-card">
-                        <h3>Tuvastatud sõidukeid</h3>
-                        <div class="data-value" id="detected-count">0</div>
-                        <p>sõidukit</p>
-                    </div>
-                    
-                    <div class="data-card">
-                        <h3>Keskmine kiirus</h3>
-                        <div class="data-value" id="average-speed">0</div>
-                        <p>km/h</p>
-                    </div>
-                    
-                    <div class="data-card">
-                        <h3>Kiiruseületajaid</h3>
-                        <div class="data-value" id="speed-violations">0</div>
-                        <p>sõidukit</p>
+            <div class="destination-input">
+                <h3>Sihtkoht</h3>
+                <div class="input-group">
+                    <input type="text" id="destination-input" placeholder="Sisesta sihtkoht...">
+                    <button id="set-destination">OK</button>
+                </div>
+                <button id="use-current-location" class="secondary">Kasuta praegust asukohta</button>
+                <button id="clear-destination" class="secondary" style="margin-top: 0.5rem; display: none;">Tühista sihtkoht</button>
+            </div>
+            
+            <div class="speed-display">
+                <div class="current-speed" id="current-speed">0</div>
+                <div class="speed-unit">km/h</div>
+                <div class="speed-limit" id="speed-limit">Kiiruspiirang: -</div>
+            </div>
+            
+            <div class="route-info">
+                <h3>Teekonna info</h3>
+                <p id="route-distance">Vali sihtkoht</p>
+                <p id="route-time">-</p>
+                <p id="route-details" style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;"></p>
+            </div>
+            
+            <div class="alerts-panel">
+                <h3>Hoiatused teel</h3>
+                <div id="alerts-container">
+                    <div class="alert-item">
+                        <div class="alert-icon">ℹ️</div>
+                        <div>Sihtkohta pole määratud</div>
                     </div>
                 </div>
-                
-                <div class="logs-section">
-                    <h2>Liikluslogi</h2>
-                    <div class="logs-controls">
-                        <p>Kõikide tuvastatud sõidukite andmed</p>
-                        <button id="download-logs">Laadi logi alla</button>
-                    </div>
-                    <div id="logs-content">
-                        Logi sisu kuvatakse siin tuvastamise ajal.
-                    </div>
+            </div>
+            
+            <div class="settings-panel">
+                <h3>Seaded</h3>
+                <div class="setting-item">
+                    <span>Kiiruseületuse hoiatused</span>
+                    <input type="checkbox" id="speed-alerts" checked>
                 </div>
-            </section>
+                <div class="setting-item">
+                    <span>Politsei hoiatused</span>
+                    <input type="checkbox" id="police-alerts" checked>
+                </div>
+                <div class="setting-item">
+                    <span>Kaamera hoiatused</span>
+                    <input type="checkbox" id="camera-alerts" checked>
+                </div>
+                <div class="setting-item">
+                    <span>Häälhoiatused</span>
+                    <input type="checkbox" id="voice-alerts" checked>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <footer>
-        <div class="container">
-            <p>Liikluskaamera süsteem | Tuvastab liikuvad objektid ja kiiruseületajad</p>
-        </div>
-    </footer>
 
     <script>
-        // Elementide valik
-        const startCameraBtn = document.getElementById('start-camera');
-        const startDetectionBtn = document.getElementById('start-detection');
-        const stopDetectionBtn = document.getElementById('stop-detection');
-        const simulateTrafficBtn = document.getElementById('simulate-traffic');
-        const speedLimitInput = document.getElementById('speed-limit-input');
-        const setSpeedLimitBtn = document.getElementById('set-speed-limit');
-        const cameraPreview = document.getElementById('camera-preview');
-        const detectionOverlay = document.getElementById('detection-overlay');
-        const objectList = document.getElementById('object-list');
-        const currentSpeedLimit = document.getElementById('current-speed-limit');
-        const detectedCount = document.getElementById('detected-count');
-        const averageSpeed = document.getElementById('average-speed');
-        const speedViolations = document.getElementById('speed-violations');
-        const logsContent = document.getElementById('logs-content');
-        const downloadLogsBtn = document.getElementById('download-logs');
-        const speedAlert = document.getElementById('speed-alert');
+        // Rakenduse peamised muutujad
+        let userLocation = { lat: 59.4370, lng: 24.7536, address: "Tallinn" }; // Tallinna koordinaadid vaikimisi
+        let destination = null;
+        let currentSpeed = 0;
+        let currentSpeedLimit = 50;
+        let speedWarningActive = false;
+        let voiceAlertsEnabled = true;
+        let routeActive = false;
         
-        // Kaamera ja tuvastamise muutujad
-        let stream = null;
-        let detectionActive = false;
-        let detectionInterval = null;
-        let speedLimit = 50;
+        // Kaardi ja marsruudi elemendid
+        const mapMarkers = [];
+        const routeLines = [];
+        const alertMarkers = [];
         
-        // Andmed
-        let detectedObjects = [];
-        let logData = '';
+        // DOM elemendid
+        const currentLocationElement = document.getElementById('current-location');
+        const currentSpeedElement = document.getElementById('current-speed');
+        const speedLimitElement = document.getElementById('speed-limit');
+        const destinationInput = document.getElementById('destination-input');
+        const setDestinationButton = document.getElementById('set-destination');
+        const useCurrentLocationButton = document.getElementById('use-current-location');
+        const clearDestinationButton = document.getElementById('clear-destination');
+        const routeDistanceElement = document.getElementById('route-distance');
+        const routeTimeElement = document.getElementById('route-time');
+        const routeDetailsElement = document.getElementById('route-details');
+        const speedWarningElement = document.getElementById('speed-warning');
+        const voiceAlertButton = document.getElementById('voice-alert');
+        const notificationElement = document.getElementById('notification');
+        const mapCoordinatesElement = document.getElementById('map-coordinates');
+        const alertsContainer = document.getElementById('alerts-container');
+        const speedAlertsCheckbox = document.getElementById('speed-alerts');
+        const policeAlertsCheckbox = document.getElementById('police-alerts');
+        const cameraAlertsCheckbox = document.getElementById('camera-alerts');
+        const voiceAlertsCheckbox = document.getElementById('voice-alerts');
         
-        // Kaamera käivitamine
-        startCameraBtn.addEventListener('click', async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 640, height: 480 } 
-                });
-                cameraPreview.srcObject = stream;
-                startDetectionBtn.disabled = false;
-                startCameraBtn.disabled = true;
-                
-                // Lisa logi
-                addToLog('Kaamera käivitatud');
-            } catch (error) {
-                console.error('Kaamera käivitamine ebaõnnestus:', error);
-                alert('Kaamera käivitamine ebaõnnestus. Palun kontrollige kaamera õiguseid.');
-            }
-        });
-        
-        // Tuvastamise käivitamine
-        startDetectionBtn.addEventListener('click', () => {
-            detectionActive = true;
-            startDetectionBtn.disabled = true;
-            stopDetectionBtn.disabled = false;
+        // Initsialiseeri rakendus
+        function initApp() {
+            console.log("Rakendus käivitatud");
             
-            // Käivita tuvastamine
-            startObjectDetection();
+            // Kuula nuppe
+            setDestinationButton.addEventListener('click', setDestination);
+            useCurrentLocationButton.addEventListener('click', useCurrentLocation);
+            clearDestinationButton.addEventListener('click', clearDestination);
+            voiceAlertButton.addEventListener('click', toggleVoiceAlerts);
             
-            // Lisa logi
-            addToLog('Objekti tuvastamine käivitatud');
-        });
-        
-        // Tuvastamise peatamine
-        stopDetectionBtn.addEventListener('click', () => {
-            detectionActive = false;
-            startDetectionBtn.disabled = false;
-            stopDetectionBtn.disabled = true;
+            // Kuula klahvivajutusi
+            destinationInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    setDestination();
+                }
+            });
             
-            // Peata tuvastamine
-            clearInterval(detectionInterval);
-            detectionOverlay.innerHTML = '';
+            // Kuula seadistusi
+            speedAlertsCheckbox.addEventListener('change', updateSettings);
+            policeAlertsCheckbox.addEventListener('change', updateSettings);
+            cameraAlertsCheckbox.addEventListener('change', updateSettings);
+            voiceAlertsCheckbox.addEventListener('change', updateSettings);
             
-            // Lisa logi
-            addToLog('Objekti tuvastamine peatatud');
-        });
+            // Initsialiseeri kaart
+            initMap();
+            
+            // Simuleeri asukoha muutust
+            simulateLocationChange();
+            
+            // Simuleeri kiiruse muutust
+            simulateSpeedChange();
+            
+            // Lisa mõned politsei- ja kaameramärgid
+            addRandomAlerts();
+            
+            // Näita teavitust
+            showNotification("Rakendus on käivitatud!", "success");
+        }
         
-        // Kiiruspiirangu määramine
-        setSpeedLimitBtn.addEventListener('click', () => {
-            const newLimit = parseInt(speedLimitInput.value);
-            if (newLimit >= 20 && newLimit <= 120) {
-                speedLimit = newLimit;
-                currentSpeedLimit.textContent = speedLimit;
-                
-                // Lisa logi
-                addToLog(`Kiiruspiirang muudetud: ${speedLimit} km/h`);
-            } else {
-                alert('Palun sisesta kehtiv kiiruspiirang (20-120 km/h)');
-            }
-        });
+        // Kaardi initsialiseerimine
+        function initMap() {
+            console.log("Kaart initsialiseeritud");
+            
+            // Uuenda koordinaate
+            updateMapCoordinates();
+            
+            // Lisa kasutaja asukoha marker
+            addUserMarker();
+        }
         
-        // Liikluse simuleerimine
-        simulateTrafficBtn.addEventListener('click', () => {
-            if (!detectionActive) {
-                alert('Palun käivita esmalt objekti tuvastamine!');
+        // Kasutaja markeri lisamine
+        function addUserMarker() {
+            const marker = document.createElement('div');
+            marker.className = 'map-marker user';
+            marker.id = 'user-marker';
+            marker.style.left = '50%';
+            marker.style.top = '50%';
+            marker.style.transform = 'translate(-50%, -50%)';
+            marker.innerHTML = '📍';
+            marker.title = 'Sinu asukoht';
+            
+            document.getElementById('map').appendChild(marker);
+            mapMarkers.push(marker);
+        }
+        
+        // Sihtkoha määramine
+        function setDestination() {
+            const destinationText = destinationInput.value.trim();
+            if (!destinationText) {
+                showNotification("Palun sisesta sihtkoht!", "warning");
+                destinationInput.focus();
                 return;
             }
             
-            // Lisa mõned sõidukid simuleerimiseks
-            simulateTraffic();
-        });
+            console.log("Sihtkoht määratud:", destinationText);
+            
+            // Simuleeri marsruudi leidmist
+            destination = {
+                name: destinationText,
+                lat: userLocation.lat + (Math.random() * 0.1 - 0.05),
+                lng: userLocation.lng + (Math.random() * 0.1 - 0.05),
+                address: destinationText
+            };
+            
+            // Aktiveeri marsruut
+            routeActive = true;
+            
+            // Uuenda UI-d
+            updateRouteInfo();
+            
+            // Lisa marsruut kaardile
+            drawRoute();
+            
+            // Lisa sihtkoha marker
+            addDestinationMarker();
+            
+            // Lisa hoiatusi marsruudile
+            addRouteAlerts();
+            
+            // Näita nuppu sihtkoha tühistamiseks
+            clearDestinationButton.style.display = 'block';
+            
+            // Näita teavitust
+            showNotification("Sihtkoht määratud: " + destinationText, "success");
+            
+            // Mängi kinnitushääl
+            if (voiceAlertsEnabled) {
+                playVoiceAlert("Sihtkoht määratud: " + destinationText);
+            }
+        }
         
-        // Logi allalaadimine
-        downloadLogsBtn.addEventListener('click', () => {
-            const logsText = logsContent.textContent;
-            const blob = new Blob([logsText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'liikluslogi.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
+        // Praeguse asukoha kasutamine sihtkohana
+        function useCurrentLocation() {
+            console.log("Kasutan praegust asukohta");
+            destinationInput.value = 'Praegune asukoht';
+            setDestination();
+        }
         
-        // Objekti tuvastamise funktsioon
-        function startObjectDetection() {
-            detectionInterval = setInterval(() => {
-                if (!detectionActive) return;
+        // Sihtkoha tühistamine
+        function clearDestination() {
+            console.log("Sihtkoht tühistatud");
+            
+            destination = null;
+            routeActive = false;
+            
+            // Eemalda marsruudid ja markerid
+            clearRoute();
+            
+            // Peida tühistamise nupp
+            clearDestinationButton.style.display = 'none';
+            
+            // Tühjenda sisendväli
+            destinationInput.value = '';
+            
+            // Lähtesta marsruudi info
+            routeDistanceElement.textContent = 'Vali sihtkoht';
+            routeTimeElement.textContent = '-';
+            routeDetailsElement.textContent = '';
+            
+            // Uuenda hoiatusi
+            alertsContainer.innerHTML = '<div class="alert-item"><div class="alert-icon">ℹ️</div><div>Sihtkohta pole määratud</div></div>';
+            
+            // Näita teavitust
+            showNotification("Sihtkoht tühistatud", "info");
+        }
+        
+        // Marsruudi info uuendamine
+        function updateRouteInfo() {
+            if (!destination) return;
+            
+            const distance = Math.round(calculateDistance(userLocation, destination) * 10) / 10;
+            const time = Math.round(distance / 50 * 60); // Eeldades keskmist kiirust 50 km/h
+            
+            routeDistanceElement.textContent = `Vahemaa: ${distance} km`;
+            routeTimeElement.textContent = `Hinnanguline aeg: ${time} min`;
+            routeDetailsElement.textContent = `Sihtkoht: ${destination.name}`;
+        }
+        
+        // Marsruudi joonistamine
+        function drawRoute() {
+            // Eemalda eelmised marsruudid
+            clearRouteLines();
+            
+            if (!destination) return;
+            
+            // Lihtne marsruudi simulatsioon
+            const routeLine = document.createElement('div');
+            routeLine.className = 'route-line';
+            routeLine.id = 'main-route';
+            
+            // Aseta ja pööra joont kasutaja ja sihtkoha vahele
+            const dx = 50; // Horisontaalne nihe protsentides
+            const dy = 30; // Vertikaalne nihe protsentides
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            routeLine.style.width = `${length}%`;
+            routeLine.style.left = '25%';
+            routeLine.style.top = '35%';
+            routeLine.style.transform = `rotate(${angle}deg)`;
+            
+            document.getElementById('map').appendChild(routeLine);
+            routeLines.push(routeLine);
+        }
+        
+        // Sihtkoha markeri lisamine
+        function addDestinationMarker() {
+            // Eemalda eelmised sihtkoha markerid
+            const existingMarkers = document.querySelectorAll('.map-marker.destination');
+            existingMarkers.forEach(marker => marker.remove());
+            
+            if (!destination) return;
+            
+            const marker = document.createElement('div');
+            marker.className = 'map-marker destination';
+            marker.style.left = '75%';
+            marker.style.top = '65%';
+            marker.style.transform = 'translate(-50%, -50%)';
+            marker.innerHTML = '🎯';
+            marker.title = `Sihtkoht: ${destination.name}`;
+            
+            document.getElementById('map').appendChild(marker);
+            mapMarkers.push(marker);
+        }
+        
+        // Marsruudi eemaldamine
+        function clearRoute() {
+            clearRouteLines();
+            
+            // Eemalda sihtkoha markerid
+            const destinationMarkers = document.querySelectorAll('.map-marker.destination');
+            destinationMarkers.forEach(marker => marker.remove());
+        }
+        
+        // Marsruudijoonte eemaldamine
+        function clearRouteLines() {
+            routeLines.forEach(line => {
+                if (line.parentNode) {
+                    line.parentNode.removeChild(line);
+                }
+            });
+            routeLines.length = 0;
+        }
+        
+        // Kauguse arvutamine kahe punkti vahel
+        function calculateDistance(point1, point2) {
+            const R = 6371; // Maa raadius km
+            const dLat = (point2.lat - point1.lat) * Math.PI / 180;
+            const dLon = (point2.lng - point1.lng) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        
+        // Asukoha muutumise simulatsioon
+        function simulateLocationChange() {
+            setInterval(() => {
+                // Muuda asukohta veidi
+                userLocation.lat += (Math.random() * 0.001 - 0.0005);
+                userLocation.lng += (Math.random() * 0.001 - 0.0005);
                 
-                // Juhuslikult lisa uusi objekte (simulatsioon)
-                if (Math.random() < 0.3) {
-                    addRandomObject();
+                // Uuenda asukoha teksti
+                currentLocationElement.textContent = 
+                    `${userLocation.address} (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})`;
+                
+                // Uuenda kaardi koordinaate
+                updateMapCoordinates();
+                
+                // Uuenda marsruuti kui see on olemas
+                if (destination && routeActive) {
+                    updateRouteInfo();
+                    drawRoute();
+                }
+            }, 3000);
+        }
+        
+        // Kaardi koordinaatide uuendamine
+        function updateMapCoordinates() {
+            mapCoordinatesElement.textContent = 
+                `Praegused koordinaadid: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+        }
+        
+        // Kiiruse muutumise simulatsioon
+        function simulateSpeedChange() {
+            setInterval(() => {
+                // Muuda kiirust juhuslikult
+                const speedChange = Math.random() * 10 - 5;
+                currentSpeed = Math.max(0, currentSpeed + speedChange);
+                
+                // Mõnikord muuda kiiruspiirangut
+                if (Math.random() < 0.1) {
+                    const limits = [30, 50, 70, 90];
+                    currentSpeedLimit = limits[Math.floor(Math.random() * limits.length)];
                 }
                 
-                // Uuenda olemasolevaid objekte
-                updateObjects();
+                // Uuenda kiiruse kuvamist
+                currentSpeedElement.textContent = Math.round(currentSpeed);
+                speedLimitElement.textContent = `Kiiruspiirang: ${currentSpeedLimit} km/h`;
                 
-                // Uuenda kasutajaliidest
-                updateUI();
-                
+                // Kontrolli kiiruseületust
+                checkSpeedViolation();
             }, 1000);
         }
         
-        // Juhusliku objekti lisamine
-        function addRandomObject() {
-            const objectTypes = ['Auto', 'Veoauto', 'Buss', 'Mootorratas'];
-            const type = objectTypes[Math.floor(Math.random() * objectTypes.length)];
+        // Kiiruseületuse kontroll
+        function checkSpeedViolation() {
+            const speedAlertsEnabled = speedAlertsCheckbox.checked;
             
-            // Genereeri juhuslik kiirus (enamasti piirangu lähedal, mõnikord üle)
-            let speed;
-            if (Math.random() < 0.8) {
-                // Enamik sõidukeid sõidab piirangu lähedal
-                speed = speedLimit + Math.floor(Math.random() * 20) - 10;
-            } else {
-                // Mõned ületavad piirangut oluliselt
-                speed = speedLimit + Math.floor(Math.random() * 30) + 10;
-            }
-            
-            // Veendu, et kiirus ei oleks liiga madal
-            speed = Math.max(30, speed);
-            
-            const object = {
-                id: Date.now() + Math.floor(Math.random() * 1000),
-                type: type,
-                speed: speed,
-                x: Math.floor(Math.random() * 80) + 10, // % laiusest
-                y: Math.floor(Math.random() * 80) + 10, // % kõrgusest
-                width: Math.floor(Math.random() * 15) + 10, // % laiusest
-                height: Math.floor(Math.random() * 10) + 5, // % kõrgusest
-                timestamp: new Date()
-            };
-            
-            detectedObjects.push(object);
-            
-            // Lisa logi
-            addToLog(`Tuvastatud: ${object.type}, kiirus: ${object.speed} km/h`);
-            
-            // Näita hoiatusi kiiruseületajate puhul
-            if (object.speed > speedLimit) {
-                showSpeedAlert(object);
-            }
-        }
-        
-        // Objektide uuendamine
-        function updateObjects() {
-            // Eemalda vananenud objektid (vanemad kui 10 sekundit)
-            const now = new Date();
-            detectedObjects = detectedObjects.filter(obj => {
-                return (now - obj.timestamp) < 10000; // 10 sekundit
-            });
-            
-            // Liiguta objekte (simulatsioon)
-            detectedObjects.forEach(obj => {
-                // Liiguta objekti horisontaalselt
-                obj.x += Math.floor(Math.random() * 10) - 5;
+            if (speedAlertsEnabled && currentSpeed > currentSpeedLimit) {
+                // Näita hoiust
+                speedWarningElement.style.display = 'block';
+                currentSpeedElement.classList.add('speed-over');
                 
-                // Veendu, et objekt jääb kaadrisse
-                if (obj.x < 5) obj.x = 5;
-                if (obj.x > 95) obj.x = 95;
-            });
-        }
-        
-        // Kasutajaliidese uuendamine
-        function updateUI() {
-            // Uuenda tuvastatud objektide loendit
-            objectList.innerHTML = '';
-            
-            if (detectedObjects.length === 0) {
-                objectList.innerHTML = '<p>Sõidukeid ei ole tuvastatud</p>';
-            } else {
-                detectedObjects.forEach(obj => {
-                    const item = document.createElement('div');
-                    item.className = 'object-item';
-                    item.innerHTML = `
-                        <span>${obj.type}</span>
-                        <span class="object-speed ${obj.speed > speedLimit ? 'speed-over' : ''}">
-                            ${obj.speed} km/h
-                        </span>
-                    `;
-                    objectList.appendChild(item);
-                });
-            }
-            
-            // Uuenda andmeid
-            detectedCount.textContent = detectedObjects.length;
-            
-            // Arvuta keskmine kiirus
-            const avgSpeed = detectedObjects.length > 0 
-                ? Math.round(detectedObjects.reduce((sum, obj) => sum + obj.speed, 0) / detectedObjects.length)
-                : 0;
-            averageSpeed.textContent = avgSpeed;
-            
-            // Arvuta kiiruseületajate arv
-            const violations = detectedObjects.filter(obj => obj.speed > speedLimit).length;
-            speedViolations.textContent = violations;
-            
-            // Uuenda tuvastusülekatet
-            updateDetectionOverlay();
-        }
-        
-        // Tuvastusülekate uuendamine
-        function updateDetectionOverlay() {
-            detectionOverlay.innerHTML = '';
-            
-            detectedObjects.forEach(obj => {
-                const box = document.createElement('div');
-                box.className = 'detection-box';
-                box.style.left = `${obj.x}%`;
-                box.style.top = `${obj.y}%`;
-                box.style.width = `${obj.width}%`;
-                box.style.height = `${obj.height}%`;
-                box.textContent = `${obj.type} ${obj.speed}km/h`;
-                
-                // Muuda värvi kiiruseületajate puhul
-                if (obj.speed > speedLimit) {
-                    box.style.borderColor = 'red';
-                    box.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+                // Käivita häälhoiatus
+                if (voiceAlertsEnabled && !speedWarningActive) {
+                    playSpeedWarning();
+                    speedWarningActive = true;
                 }
+            } else {
+                // Peida hoiatus
+                speedWarningElement.style.display = 'none';
+                currentSpeedElement.classList.remove('speed-over');
+                speedWarningActive = false;
+            }
+        }
+        
+        // Kiiruseületuse häälehoiatus
+        function playSpeedWarning() {
+            if (!voiceAlertsEnabled) return;
+            
+            playVoiceAlert(`Hoiatus! Liigud kiirusega ${Math.round(currentSpeed)} kilomeetrit tunnis. Kiiruspiirang on ${currentSpeedLimit}. Võta kiirust maha!`);
+        }
+        
+        // Üldine häälteate esitamine
+        function playVoiceAlert(message) {
+            if (!voiceAlertsEnabled) return;
+            
+            // Kasuta Text-to-Speech'i kui see on saadaval
+            if ('speechSynthesis' in window) {
+                // Peata kõik eelmised kõned
+                speechSynthesis.cancel();
                 
-                detectionOverlay.appendChild(box);
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = 'et-EE';
+                utterance.rate = 1.0;
+                utterance.volume = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Hoiatusmarkerite lisamine
+        function addRandomAlerts() {
+            const alertTypes = ['police', 'camera', 'police', 'camera'];
+            const positions = [
+                { left: '30%', top: '40%' },
+                { left: '60%', top: '50%' },
+                { left: '45%', top: '70%' },
+                { left: '70%', top: '30%' }
+            ];
+            
+            alertTypes.forEach((type, index) => {
+                if (index < positions.length) {
+                    const marker = document.createElement('div');
+                    marker.className = `map-marker ${type}`;
+                    marker.style.left = positions[index].left;
+                    marker.style.top = positions[index].top;
+                    marker.title = type === 'police' ? 'Politsei kontroll' : 'Kiiruskaamera';
+                    
+                    document.getElementById('map').appendChild(marker);
+                    alertMarkers.push(marker);
+                }
             });
         }
         
-        // Kiiruseületuse hoiatus
-        function showSpeedAlert(object) {
-            speedAlert.style.display = 'block';
-            speedAlert.innerHTML = `<strong>Hoiatus!</strong> Tuvastati kiiruspiirangu ületaja: ${object.type} kiirusega ${object.speed} km/h (piirang: ${speedLimit} km/h)`;
+        // Marsruudil olevate hoiatusete lisamine
+        function addRouteAlerts() {
+            if (!destination) return;
             
-            // Peida hoiatus 5 sekundi pärast
-            setTimeout(() => {
-                speedAlert.style.display = 'none';
-            }, 5000);
+            alertsContainer.innerHTML = '';
+            
+            const alerts = [
+                { type: 'police', text: 'Politsei kontroll 2 km jooksul', icon: '🚓' },
+                { type: 'camera', text: 'Kiiruskaamera 5 km jooksul', icon: '📹' },
+                { type: 'warning', text: 'Tee-ehitus 8 km jooksul', icon: '🚧' },
+                { type: 'warning', text: 'Libedus 12 km jooksul', icon: '⚠️' }
+            ];
+            
+            alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.className = `alert-item ${alert.type}`;
+                alertElement.innerHTML = `
+                    <div class="alert-icon">${alert.icon}</div>
+                    <div>${alert.text}</div>
+                `;
+                alertsContainer.appendChild(alertElement);
+            });
         }
         
-        // Liikluse simuleerimine
-        function simulateTraffic() {
-            // Lisa mitu objekti korraga
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    addRandomObject();
-                }, i * 1000);
+        // Häälhoiatusete lülitamine
+        function toggleVoiceAlerts() {
+            voiceAlertsEnabled = !voiceAlertsEnabled;
+            voiceAlertsCheckbox.checked = voiceAlertsEnabled;
+            
+            if (voiceAlertsEnabled) {
+                voiceAlertButton.classList.remove('muted');
+                voiceAlertButton.style.backgroundColor = 'var(--primary-color)';
+                playVoiceAlert('Häälhoiatused sisse lülitatud');
+            } else {
+                voiceAlertButton.classList.add('muted');
+                voiceAlertButton.style.backgroundColor = '#757575';
+                // Peata kõik kõned
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.cancel();
+                }
+            }
+        }
+        
+        // Seadete uuendamine
+        function updateSettings() {
+            voiceAlertsEnabled = voiceAlertsCheckbox.checked;
+            
+            // Värskenda häälteate nupu olekut
+            if (voiceAlertsEnabled) {
+                voiceAlertButton.classList.remove('muted');
+                voiceAlertButton.style.backgroundColor = 'var(--primary-color)';
+            } else {
+                voiceAlertButton.classList.add('muted');
+                voiceAlertButton.style.backgroundColor = '#757575';
             }
             
-            addToLog('Liikluse simuleerimine käivitatud');
+            // Peata hoiatused kui need on välja lülitatud
+            if (!speedAlertsCheckbox.checked) {
+                speedWarningElement.style.display = 'none';
+                currentSpeedElement.classList.remove('speed-over');
+            }
         }
         
-        // Logi lisamine
-        function addToLog(message) {
-            const timestamp = new Date().toLocaleString('et-EE');
-            logData += `[${timestamp}] ${message}\n`;
-            logsContent.textContent = logData;
-            logsContent.scrollTop = logsContent.scrollHeight;
+        // Teavituse näitamine
+        function showNotification(message, type = "info") {
+            notificationElement.textContent = message;
+            
+            // Määra taustavärv vastavalt tüübile
+            if (type === "success") {
+                notificationElement.style.backgroundColor = "var(--success-color)";
+            } else if (type === "warning") {
+                notificationElement.style.backgroundColor = "var(--warning-color)";
+            } else {
+                notificationElement.style.backgroundColor = "var(--accent-color)";
+            }
+            
+            notificationElement.style.display = "block";
+            
+            // Peida teavitus 3 sekundi pärast
+            setTimeout(() => {
+                notificationElement.style.display = "none";
+            }, 3000);
         }
         
-        // Algseadistus
-        currentSpeedLimit.textContent = speedLimit;
-        addToLog('Liikluskaamera süsteem käivitatud');
+        // Käivita rakendus
+        window.addEventListener('load', initApp);
     </script>
 </body>
 </html>
