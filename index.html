@@ -3,20 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Liikumise ja objektide tuvastus (HTML)</title>
+  <title>Metsa-kaamera — puuliigi, sortimendi ja rikete tuvastus</title>
   <style>
-    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial;margin:0;display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
-    .stage{position:relative;width:100%;max-width:720px;background:#111;color:#fff;border-radius:10px;overflow:hidden}
-    video{width:100%;height:auto;display:block}
+    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial;margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px}
+    .stage{position:relative;width:100%;max-width:900px;background:#f7f7f7;color:#111;border-radius:10px;overflow:hidden}
+    video{width:100%;height:auto;display:block;background:#000}
     canvas.overlay{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    button,select{padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#000}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button,select,input[type=file]{padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#000}
+    label{display:flex;gap:6px;align-items:center}
     .status{font-size:14px}
-    .hint{font-size:13px;color:#444;max-width:720px}
+    .hint{font-size:13px;color:#444;max-width:900px}
+    .log-area{width:100%;max-width:900px;height:220px;overflow:auto;background:#111;color:#0f0;padding:8px;border-radius:6px;font-family:monospace}
   </style>
 </head>
 <body>
-  <h2>Kaamera — liikumise ja objektide tuvastus</h2>
+  <h2>Metsa-kaamera — puuliigi, sortimendi ja rikete tuvastus</h2>
   <div class="stage">
     <video id="video" autoplay playsinline></video>
     <canvas id="overlay" class="overlay"></canvas>
@@ -26,11 +28,21 @@
     <button id="startBtn">Alusta</button>
     <button id="stopBtn" disabled>Peata</button>
     <label>Kaamera: <select id="camSelect"></select></label>
-    <label>Liikumise tundlikkus: <input id="sensitivity" type="range" min="0.5" max="10" step="0.1" value="2"> <span id="sensVal">2.0</span></label>
+    <label>Liikumise tundlikkus: <input id="sensitivity" type="range" min="0.5" max="10" step="0.1" value="2"><span id="sensVal">2.0</span></label>
+    <label>Referentsobjekt pikkus (cm): <input id="refCm" type="number" step="1" value="100" style="width:80px"></label>
+  </div>
+
+  <div class="controls">
+    <label>Lae puuliigi mudel (TFJS): <input id="speciesModel" type="file" accept=".json"></label>
+    <label>Lae rikete/mädaniku mudel (TFJS): <input id="damageModel" type="file" accept=".json"></label>
+    <button id="captureBtn">Pildista & analüüsi</button>
+    <button id="downloadLogBtn">Laadi alla logifail (.json)</button>
   </div>
 
   <div class="status" id="status">Staatus: ootab käivitamist</div>
-  <div class="hint">Märkus: see näidis kasutab TensorFlow.js'i ja COCO-SSD mudelit. Töötamiseks peab leht olema laaditud <strong>https</strong>-i või <strong>localhost</strong> üle. Soovitatav kasutada tagumist kaamerat ("environment") telefonis.</div>
+  <div class="hint">Märkused: 1) Mudelid puuliigi ja rikete tuvastuseks pead ise treenima ja eksportima TFJS formaati ("model.json" + sharded weights) ning laadima siia. 2) Täpne läbimõõdu ja mahu hinnang vajab referentsmõõtu (sisesta referentsobjekti pikkus cm). 3) Allalaetav log sisaldab kõiki tuvastusi pildil (klass, skoor, umbkaudne diameeter cm, sortiment, hinnanguline hind).</div>
+
+  <div class="log-area" id="logArea">Logi tühi — analüüsi tulemused ilmuvad siia.</div>
 
   <!-- TensorFlow.js ja COCO-SSD CDN-id -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
@@ -47,36 +59,32 @@
     const camSelect = document.getElementById('camSelect');
     const sensitivity = document.getElementById('sensitivity');
     const sensVal = document.getElementById('sensVal');
+    const captureBtn = document.getElementById('captureBtn');
+    const downloadLogBtn = document.getElementById('downloadLogBtn');
+    const logArea = document.getElementById('logArea');
+    const speciesModelInput = document.getElementById('speciesModel');
+    const damageModelInput = document.getElementById('damageModel');
+    const refCmInput = document.getElementById('refCm');
 
     let stream = null;
-    let model = null;
+    let cocoModel = null; // üldine objektidetektor (kirjed: "tree trunk" jms) — COCO ei tunne puuliike, aga aitab virnade/objektide leidmisel
+    let speciesModel = null; // klassifikaator puuliigile (kasutaja peab laadima)
+    let damageModel = null; // klassifikaator kahjustustele
     let animationId = null;
     let prevImageData = null;
+    let log = [];
 
-    // motion detection params
-    let motionThresholdRatio = parseFloat(sensitivity.value); // lower -> more sensitive
+    let motionThresholdRatio = parseFloat(sensitivity.value);
     sensVal.textContent = motionThresholdRatio.toFixed(1);
+    sensitivity.addEventListener('input', () => { motionThresholdRatio = parseFloat(sensitivity.value); sensVal.textContent = motionThresholdRatio.toFixed(1); });
 
-    sensitivity.addEventListener('input', () => {
-      motionThresholdRatio = parseFloat(sensitivity.value);
-      sensVal.textContent = motionThresholdRatio.toFixed(1);
-    });
-
-    // enumerate cameras
     async function listCameras(){
       try{
         const devices = await navigator.mediaDevices.enumerateDevices();
         const cams = devices.filter(d => d.kind === 'videoinput');
         camSelect.innerHTML = '';
-        cams.forEach((c, i) => {
-          const opt = document.createElement('option');
-          opt.value = c.deviceId;
-          opt.text = c.label || `Kaamera ${i+1}`;
-          camSelect.appendChild(opt);
-        });
-      }catch(e){
-        console.warn('Ei saanud seadmeid lugeda', e);
-      }
+        cams.forEach((c, i) => { const opt=document.createElement('option'); opt.value=c.deviceId; opt.text=c.label||`Kaamera ${i+1}`; camSelect.appendChild(opt); });
+      }catch(e){ console.warn('Seadmete loetelu ebaõnnestus', e); }
     }
 
     async function startCamera(){
@@ -87,139 +95,184 @@
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
         await video.play();
-        overlay.width = video.videoWidth;
-        overlay.height = video.videoHeight;
-        prevImageData = null;
-        status('Kaamera käivitatud. Laadin mudelit...');
+        overlay.width = video.videoWidth; overlay.height = video.videoHeight; prevImageData = null;
+        status('Kaamera käivitatud. Laadin COCO-SSD (virna/objektide leidmiseks)...');
+        if(!cocoModel){ cocoModel = await cocoSsd.load(); status('COCO-SSD valmis.'); } else status('COCO-SSD juba laetud.');
+        startBtn.disabled = true; stopBtn.disabled = false; startLoop();
+      }catch(err){ console.error(err); status('Kaamera viga: ' + err.message); }
+    }
 
-        if(!model){
-          // laadime COCO-SSD detektori
-          model = await cocoSsd.load();
-          status('Mudeli laaditud. Otsin liikumist ja tuvastan objekte.');
-        } else {
-          status('Mudeli juba laetud. Otsin liikumist ja tuvastan objekte.');
+    function stopCamera(){ if(animationId) cancelAnimationFrame(animationId); animationId=null; if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } startBtn.disabled=false; stopBtn.disabled=true; status('Peatatatud.'); ctx.clearRect(0,0,overlay.width, overlay.height); }
+    function status(t){ statusEl.textContent = 'Staatus: ' + t; }
+
+    // lihtne liikumise tuvastus
+    function detectMotion(imageData){ if(!prevImageData){ prevImageData = imageData; return false; } const curr=imageData.data, prev=prevImageData.data; let diffCount=0; for(let i=0;i<curr.length;i+=24){ const gray1=(curr[i]+curr[i+1]+curr[i+2])/3; const gray0=(prev[i]+prev[i+1]+prev[i+2])/3; if(Math.abs(gray1-gray0)>20) diffCount++; } prevImageData=imageData; const sampled=(imageData.width*imageData.height)/9; const ratio=diffCount/sampled; const threshold=0.01*motionThresholdRatio; return ratio>threshold; }
+
+    // abifunktsioonid: laadida kasutaja mudel
+    async function loadTFJSModelFromFile(input){
+      if(!input.files || input.files.length===0) return null;
+      // ootame, et kasutaja valiks model.json ja weights failid; TFJS saab otse file:// URL-iga kasutada "tf.io.browserFiles"
+      const files = Array.from(input.files);
+      try{
+        const m = await tf.loadGraphModel(tf.io.browserFiles(files));
+        return m;
+      }catch(e){
+        console.error('Mudeli laadimine ebaõnnestus', e);
+        try{ const m2 = await tf.loadLayersModel(tf.io.browserFiles(files)); return m2; }catch(e2){ console.error(e2); return null; }
+      }
+    }
+
+    speciesModelInput.addEventListener('change', async ()=>{
+      status('Laen puuliigi mudelit...'); speciesModel = await loadTFJSModelFromFile(speciesModelInput); if(speciesModel) status('Puuliigi mudel laetud.'); else status('Puuliigi mudeli laadimine ebaõnnestus.');
+    });
+    damageModelInput.addEventListener('change', async ()=>{
+      status('Laen rikete mudelit...'); damageModel = await loadTFJSModelFromFile(damageModelInput); if(damageModel) status('Rikete mudel laetud.'); else status('Rikete mudeli laadimine ebaõnnestus.');
+    });
+
+    // Capture + analyse
+    captureBtn.addEventListener('click', async ()=>{ if(!video.srcObject){ status('Alusta kaamerat enne pildistamist'); return; } captureBtn.disabled=true; try{ await analyseFrame(); }finally{ captureBtn.disabled=false; } });
+
+    // download log
+    downloadLogBtn.addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(log, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download = `metsatuvastus_log_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'_')}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // analüüsi põhifunktsioon
+    async function analyseFrame(){
+      // kopeerime video kaadri
+      const off = document.createElement('canvas'); const w = video.videoWidth, h = video.videoHeight; off.width=w; off.height=h; const offCtx = off.getContext('2d'); offCtx.drawImage(video,0,0,w,h);
+      const imageData = offCtx.getImageData(0,0,w,h);
+      // lihtne virna/objektide leidmine: kasutame COCO detektorit, mis suudab tuvastada inimesi, autosid jt. Kuna COCO ei tunne puuliike, me otsime suurt "tree"/"log"/"truck" vms; kui COCO ei leita, proovime segmentatsiooni virna jaoks
+      status('Analüüsin kaadrit — objektide otsing...');
+      const detections = await cocoModel.detect(video);
+      // filtreeri potentsiaalsed virnad / tüved: vaata 'person' ignore, otsi suureid objekte
+      const candidates = detections.filter(d=>d.score>0.35 && (d.class==='person'===false));
+
+      // kui pole kandidaate, proovime lihtsat segmentatsiooni (säravuse-kõrguste põhjal) virna leidmiseks
+      let regions = [];
+      if(candidates.length===0){
+        status('COCO ei leidnud selgeid objekte — proovime lihtsat segmentatsiooni virna leidmiseks');
+        // grayscale + threshold
+        const gray = new Uint8ClampedArray(w*h);
+        for(let i=0;i<w*h;i++){ const r=imageData.data[i*4], g=imageData.data[i*4+1], b=imageData.data[i*4+2]; gray[i]=0.3*r+0.59*g+0.11*b; }
+        // otsime tumedamaid alasid (virnad kipuvad olema tumedamad kui taust) — väga heuristiline
+        const mask = new Uint8ClampedArray(w*h);
+        const meanGray = gray.reduce((a,b)=>a+b,0)/(w*h);
+        for(let i=0;i<w*h;i++) mask[i] = gray[i] < meanGray*0.95 ? 1:0;
+        // bounding boxes from mask (very naive): find connected components by scanning rows
+        const seen = new Uint8Array(w*h);
+        function bboxFromComponent(sx,sy){ let minx=sx,maxx=sx,miny=sy,maxy=sy; const stack=[[sx,sy]]; seen[sy*w+sx]=1; while(stack.length){ const [x,y]=stack.pop(); for(const dx of [-1,0,1]) for(const dy of [-1,0,1]){ const nx=x+dx, ny=y+dy; if(nx<0||ny<0||nx>=w||ny>=h) continue; const idx=ny*w+nx; if(mask[idx] && !seen[idx]){ seen[idx]=1; stack.push([nx,ny]); if(nx<minx)minx=nx; if(nx>maxx)maxx=nx; if(ny<miny)miny=ny; if(ny>maxy)maxy=ny; } } } return {x:minx,y:miny,w:(maxx-minx),h:(maxy-miny)}; }
+        for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const idx=y*w+x; if(mask[idx] && !seen[idx]){ const bb=bboxFromComponent(x,y); // filter tiny
+            if(bb.w*bb.h > (w*h*0.002)) regions.push({bbox:[bb.x,bb.y,bb.w,bb.h], score:0.5, class:'pile_candidate'});
+        } } }
+      } else {
+        // convert COCO boxes to regions
+        regions = candidates.map(c=>({bbox:c.bbox, score:c.score, class:c.class}));
+      }
+
+      // tühjenda overlay
+      ctx.clearRect(0,0,overlay.width,overlay.height);
+      // mõõtmiseks vajalik skaalamuutus: kui kasutaja sisestas referents-pikkuse, kasutame seda
+      const refCm = parseFloat(refCmInput.value) || 100;
+      // suurema aluse diag: kasutame video laius kui 1: kasutaja peab sisestama reaalse referentsobjekti, nt mõõdulint või teadaoleva pikkuse laiaobjekti
+
+      // läbime leitud regioonid ja teeme detailse analüüsi (puuliik, rikete tüüp, diameeter, sortiment, hind)
+      const resultsForFrame = [];
+      for(const r of regions){
+        const [x,y,wbox,hbox] = r.bbox.map(v=>Math.round(v));
+        // crop image
+        const crop = offCtx.getImageData(x,y,wbox,hbox);
+        // joonista kast
+        ctx.strokeStyle = 'lime'; ctx.lineWidth = 3; ctx.strokeRect(x,y,wbox,hbox);
+        ctx.font = '16px sans-serif'; ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(x, y-22, 200, 22);
+        ctx.fillStyle='white'; ctx.fillText(`${r.class} ${(r.score*100).toFixed(0)}%`, x+6, y-6);
+
+        // eeldused ja hinnangud
+        // 1) puuliigi tuvastus: kui speciesModel olemas, siis kasutame seda. Eeldame, et mudel võtab 224x224 RGB pildi ja väljastab tõenäosused klassidele
+        let species = {class:'unknown', score:0};
+        if(speciesModel){
+          try{
+            const imgTensor = tf.browser.fromPixels(crop).resizeBilinear([224,224]).toFloat().expandDims(0).div(255.0);
+            const preds = await speciesModel.predict(imgTensor);
+            // püüame lugeda tulemusi nii peek() kui array
+            let arr = null;
+            if(preds.data) arr = await preds.data(); else arr = await preds.array();
+            // kui mudelil on klassi-nimekiri (metainfo puudub), proovime kasutada klasside indeksi teksti
+            // me eeldame, et kasutaja lisab metainfo hiljem; siin valime argmax
+            const maxIdx = arr.indexOf(Math.max(...arr));
+            species = {class:`class_${maxIdx}`, score:arr[maxIdx]};
+            imgTensor.dispose(); if(preds.dispose) preds.dispose();
+          }catch(e){ console.error('Puuliigi ennustus ebaõnnestus', e); }
         }
 
-        startLoop();
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-      }catch(err){
-        console.error(err);
-        status('Viga kaamera avamisel: ' + err.message);
-      }
-    }
+        // 2) rikete tuvastus (damageModel) — sarnane
+        let damage = {class:'unknown', score:0};
+        if(damageModel){
+          try{
+            const imgT = tf.browser.fromPixels(crop).resizeBilinear([224,224]).toFloat().expandDims(0).div(255.0);
+            const p = await damageModel.predict(imgT);
+            const parr = p.data ? await p.data() : await p.array(); const midx = parr.indexOf(Math.max(...parr)); damage = {class:`class_${midx}`, score:parr[midx]}; imgT.dispose(); if(p.dispose) p.dispose();
+          }catch(e){ console.error('Rikete mudeli viga', e); }
+        }
 
-    function stopCamera(){
-      if(animationId) cancelAnimationFrame(animationId);
-      animationId = null;
-      if(stream){
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-      }
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      status('Peatatatud.');
-      ctx.clearRect(0,0,overlay.width, overlay.height);
-    }
+        // 3) umbkaudne diameeter cm: me eeldame, et kasutaja on sisestanud referentsobjekti pikkuse cm ning me kasutame videopildi laius pikslites kui visuaalse ruumi skaala
+        // lihtsustatult: kui referentsobjekt täidab kogu pildi laiust reaalmahus refCm, siis 1 piksel = refCm / videoWidth cm
+        const pxToCm = refCm / video.videoWidth; // väga heuristiline! kasutaja peaks sisestama täpse referentsobjekti mõõtmise
+        const approxDiameterCm = Math.round((Math.min(wbox,hbox)) * pxToCm);
 
-    function status(text){ statusEl.textContent = 'Staatus: ' + text; }
+        // 4) sortimendi hinnangu heuristika (väga lihtne): suur diameeter + sirge tüvi -> palk/palgipuu; väiksem -> paberipuit; väga väike -> küttepuit
+        let sortiment = 'unknown';
+        if(approxDiameterCm >= 24) sortiment = 'palk';
+        else if(approxDiameterCm >= 10) sortiment = 'peenpalk / lati';
+        else sortiment = 'paberipuit / küttepuu';
 
-    // lihtne liikumise tuvastus: võtame iga kaadri, teisendame halltooniks, leiame erinevuse eelmise kaadriga
-    function detectMotion(imageData){
-      if(!prevImageData){ prevImageData = imageData; return false; }
-      const w = imageData.width, h = imageData.height;
-      const curr = imageData.data;
-      const prev = prevImageData.data;
-      let diffCount = 0;
-      // sample every 4th pixel to reduce load
-      for(let i=0;i<curr.length;i+=16){
-        // RGB to gray
-        const r1 = curr[i], g1 = curr[i+1], b1 = curr[i+2];
-        const r0 = prev[i], g0 = prev[i+1], b0 = prev[i+2];
-        const gray1 = (r1+g1+b1)/3;
-        const gray0 = (r0+g0+b0)/3;
-        if(Math.abs(gray1-gray0) > 25) diffCount++;
+        // 5) umbkaudne hind — näitena: kasutame lihtsat hinnamudelit kuuse/mänd/palk (EUR/m3) — tegelikus kasutuses peaks see tulema turgude hinnakirjast
+        // määrame mahtu lihtsast koonuse loendist: volume ~ (pi/4) * d^2 * length; length oletame tüvel hbox px -> umbkaudne pikkus cm -> m
+        // eeldame noti pikkus = hbox px -> cm = hbox * pxToCm
+        const lengthM = (hbox * pxToCm)/100; const dM = approxDiameterCm/100; const volumeM3 = Math.PI/4 * dM*dM * lengthM; // väga umbkaudne
+        // hinnad (EUR/m3) — näitlikud: okaspuud 30, lehtpuud 80
+        const speciesName = species.class;
+        let pricePerM3 = 40; // vaikimisi
+        if(/pine|mänd|kuusk|spruce|pine/i.test(speciesName)) pricePerM3 = 30;
+        else if(/kask|haab|birch|aspen|oak|tamm/i.test(speciesName)) pricePerM3 = 80;
+        const approxPriceEUR = Math.round(volumeM3 * pricePerM3);
+
+        const entry = {
+          timestamp: new Date().toISOString(),
+          regionClass: r.class,
+          detectionScore: r.score,
+          bbox: {x,y,w:wbox,h:hbox},
+          species, damage,
+          approxDiameterCm, sortiment, volumeM3: Number(volumeM3.toFixed(3)), approxPriceEUR
+        };
+        resultsForFrame.push(entry);
       }
-      prevImageData = imageData;
-      const sampledPixels = (w*h)/4; // because step 16 covers 4 pixels roughly per loop iteration
-      const ratio = diffCount / sampledPixels;
-      // adapt threshold: motionThresholdRatio values ~ 0.5..10, map to ratio threshold
-      const threshold = 0.01 * motionThresholdRatio; // empiric
-      return ratio > threshold;
+
+      // kui tulemusi ei leitud
+      if(resultsForFrame.length===0){ logArea.textContent = 'Analüüs valmis: ei leitud virna ega selget tüve. Proovi teisest vaatenurgast või kasvõnnetusi.'; status('Analüüs valmis: ei leitud objekte.'); log.push({ts:new Date().toISOString(), results:[]}); return; }
+
+      // lisa logi
+      log.push({ts:new Date().toISOString(), frameResults:resultsForFrame});
+      // kuvame logi tekstiliselt
+      logArea.textContent = JSON.stringify(log, null, 2);
+      status('Analüüs valmis — tulemused logitud. Laadi alla log, et salvestada.');
     }
 
     async function startLoop(){
-      const off = document.createElement('canvas');
-      const offCtx = off.getContext('2d');
-      off.width = video.videoWidth;
-      off.height = video.videoHeight;
-      overlay.width = off.width;
-      overlay.height = off.height;
-
-      async function loop(){
-        if(video.paused || video.ended){ animationId = requestAnimationFrame(loop); return; }
-        // draw current frame to offscreen
-        offCtx.drawImage(video, 0, 0, off.width, off.height);
-        const imageData = offCtx.getImageData(0,0,off.width, off.height);
-        const motion = detectMotion(imageData);
-
-        // clear overlay
-        ctx.clearRect(0,0,overlay.width,overlay.height);
-
-        if(motion){
-          status('Liikumine tuvastatud — käivitan objektituvastuse');
-          try{
-            // model.detect võib võtta videoelemendi otse
-            const predictions = await model.detect(video);
-            // joonista kastid ja sildid
-            predictions.forEach(pred => {
-              const [x,y,w,h] = pred.bbox;
-              ctx.strokeStyle = 'lime';
-              ctx.lineWidth = Math.max(2, Math.round(overlay.width/400));
-              ctx.strokeRect(x,y,w,h);
-              ctx.font = `${Math.max(12, Math.round(overlay.width/50))}px sans-serif`;
-              ctx.fillStyle = 'rgba(0,0,0,0.5)';
-              const text = `${pred.class} ${(pred.score*100).toFixed(0)}%`;
-              const textW = ctx.measureText(text).width + 8;
-              const textH = parseInt(ctx.font,10) + 6;
-              ctx.fillRect(x, y - textH, textW, textH);
-              ctx.fillStyle = 'white';
-              ctx.fillText(text, x+4, y-4);
-            });
-            if(predictions.length===0){ status('Liikumine tuvastatud, aga objekti ei leitud.'); }
-          }catch(e){ console.error('detect error', e); status('Objektituvastuse viga: ' + (e.message||e)); }
-        } else {
-          // kui ei ole liikumist, näita kerget infot
-          status('Ootab liikumist...');
-        }
-
-        animationId = requestAnimationFrame(loop);
-      }
+      const off = document.createElement('canvas'); const offCtx = off.getContext('2d'); off.width=video.videoWidth; off.height=video.videoHeight; overlay.width=off.width; overlay.height=off.height;
+      async function loop(){ if(video.paused || video.ended){ animationId = requestAnimationFrame(loop); return; } offCtx.drawImage(video,0,0,off.width,off.height); const imageData = offCtx.getImageData(0,0,off.width,off.height); const motion = detectMotion(imageData); ctx.clearRect(0,0,overlay.width,overlay.height); if(motion){ status('Liikumine tuvastatud — oota analüüsi jaoks pildistamist või kasuta "Pildista & analüüsi"'); ctx.fillStyle='rgba(255,0,0,0.2)'; ctx.fillRect(0,0,overlay.width,overlay.height); } else { status('Ootab liikumist...'); } animationId = requestAnimationFrame(loop); }
       loop();
     }
 
-    // tapahtised
+    // eventid
     startBtn.addEventListener('click', startCamera);
     stopBtn.addEventListener('click', stopCamera);
+    camSelect.addEventListener('change', async ()=>{ if(stream) await startCamera(); });
 
-    camSelect.addEventListener('change', async ()=>{
-      // kui jooksvalt käib, taaskäivita uue kaameraga
-      if(stream){ await startCamera(); }
-    })
-
-    // inits
-    (async ()=>{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        status('Brauser ei toeta getUserMedia API-d. Proovi Chrome/Edge/Firefox mobiilis või töölaudadel.');
-        return;
-      }
-      await listCameras();
-      // kui on valik, püüa valida environment (tagumine)
-      for(let i=0;i<camSelect.options.length;i++){
-        const opt = camSelect.options[i];
-        if(/back|rear|environment/i.test(opt.text)) { camSelect.selectedIndex = i; break; }
-      }
-    })();
+    // init
+    (async ()=>{ if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ status('Brauser ei toeta getUserMedia API-d. Kasuta kaasaegset brauserit.'); return; } await listCameras(); for(let i=0;i<camSelect.options.length;i++){ if(/back|rear|environment/i.test(camSelect.options[i].text)) { camSelect.selectedIndex=i; break; } } })();
 
   </script>
 </body>
