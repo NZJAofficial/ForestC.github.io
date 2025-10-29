@@ -30,6 +30,7 @@
             color: var(--text-color);
             line-height: 1.6;
             overflow: hidden;
+            height: 100vh;
         }
         
         header {
@@ -57,12 +58,14 @@
         
         .app-container {
             display: flex;
+            flex-direction: column;
             height: calc(100vh - 70px);
         }
         
         .map-container {
             flex: 1;
             position: relative;
+            min-height: 50vh;
         }
         
         #map {
@@ -71,22 +74,35 @@
         }
         
         .controls-panel {
-            width: 400px;
             background-color: white;
-            padding: 1.5rem;
+            padding: 1rem;
             overflow-y: auto;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             z-index: 500;
+            max-height: 45vh;
+        }
+        
+        .location-permission {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--light-color), #f5f5f5);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .location-permission h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
         }
         
         .route-planner {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
             background: linear-gradient(135deg, var(--light-color), #f5f5f5);
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
         
         .route-planner h3 {
@@ -100,7 +116,7 @@
         .route-inputs {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.5rem;
             margin-bottom: 1rem;
         }
         
@@ -109,15 +125,16 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         
         .input-group input {
             flex: 1;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem;
             border: none;
             outline: none;
             font-size: 1rem;
+            background: white;
         }
         
         .input-label {
@@ -127,6 +144,7 @@
             background-color: #f5f5f5;
             color: #666;
             font-weight: 500;
+            min-width: 60px;
         }
         
         .route-buttons {
@@ -138,7 +156,7 @@
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -149,12 +167,12 @@
             gap: 0.5rem;
             flex: 1;
             justify-content: center;
+            touch-action: manipulation;
         }
         
         button:hover {
             background-color: var(--dark-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
         }
         
         button:active {
@@ -189,26 +207,20 @@
             background-color: #cccccc;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
-        }
-        
-        button:disabled:hover {
-            background-color: #cccccc;
-            transform: none;
         }
         
         .speed-display {
             text-align: center;
-            margin: 1.5rem 0;
-            padding: 1.5rem;
+            margin: 1rem 0;
+            padding: 1rem;
             background: linear-gradient(135deg, var(--light-color), #f5f5f5);
             border-radius: 12px;
             border: 2px solid var(--accent-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
         
         .current-speed {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             font-weight: bold;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
@@ -216,13 +228,13 @@
         }
         
         .speed-unit {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--dark-color);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .speed-limit {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: var(--dark-color);
             margin-bottom: 0.5rem;
             font-weight: bold;
@@ -244,16 +256,16 @@
         }
         
         .route-info {
-            margin: 1.5rem 0;
-            padding: 1.5rem;
+            margin: 1rem 0;
+            padding: 1rem;
             background: linear-gradient(135deg, var(--light-color), #f5f5f5);
             border-radius: 12px;
             border-left: 4px solid var(--accent-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
         
         .route-info h3 {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             color: var(--primary-color);
             display: flex;
             align-items: center;
@@ -282,9 +294,9 @@
         }
         
         .progress-bar {
-            height: 8px;
+            height: 6px;
             background-color: #e0e0e0;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
             margin-bottom: 0.5rem;
         }
@@ -292,23 +304,23 @@
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--success-color), #8bc34a);
-            border-radius: 4px;
+            border-radius: 3px;
             transition: width 0.5s ease;
         }
         
         .progress-text {
             display: flex;
             justify-content: space-between;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
         }
         
         .alerts-panel {
-            margin: 1.5rem 0;
+            margin: 1rem 0;
         }
         
         .alerts-panel h3 {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             color: var(--primary-color);
             display: flex;
             align-items: center;
@@ -318,22 +330,18 @@
         .alert-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
             background-color: #fff3e0;
             border-left: 4px solid var(--warning-color);
-            border-radius: 8px;
-            transition: transform 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .alert-item:hover {
-            transform: translateX(5px);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
         }
         
         .alert-icon {
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
         
         .alert-item.police {
@@ -353,12 +361,12 @@
         
         .settings-panel {
             margin-top: auto;
-            padding-top: 1.5rem;
+            padding-top: 1rem;
             border-top: 1px solid #ddd;
         }
         
         .settings-panel h3 {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             color: var(--primary-color);
             display: flex;
             align-items: center;
@@ -369,15 +377,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
-            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
             background-color: #f9f9f9;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-        }
-        
-        .setting-item:hover {
-            background-color: #f0f0f0;
+            border-radius: 4px;
         }
         
         .speed-warning {
@@ -387,16 +390,16 @@
             transform: translate(-50%, -50%);
             background: linear-gradient(135deg, var(--warning-color), #ff7043);
             color: white;
-            padding: 2rem 3rem;
-            border-radius: 16px;
-            font-size: 2rem;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            font-size: 1.5rem;
             font-weight: bold;
             text-align: center;
             z-index: 2000;
             display: none;
             animation: blink 0.8s infinite alternate;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            border: 4px solid white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 3px solid white;
         }
         
         @keyframes blink {
@@ -412,27 +415,22 @@
         
         .voice-alert {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
+            bottom: 15px;
+            right: 15px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 50%;
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 1000;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
-            font-size: 1.5rem;
-        }
-        
-        .voice-alert:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            font-size: 1.2rem;
         }
         
         .voice-alert.muted {
@@ -441,16 +439,16 @@
         
         .notification {
             position: fixed;
-            top: 90px;
-            right: 25px;
+            top: 80px;
+            right: 15px;
             background-color: var(--success-color);
             color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
             z-index: 1000;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: none;
-            max-width: 300px;
+            max-width: 250px;
             animation: slideIn 0.3s ease;
         }
         
@@ -467,17 +465,18 @@
             background: white;
             border-radius: 0 0 8px 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
         }
         
         .search-result-item {
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
             border-bottom: 1px solid #eee;
             cursor: pointer;
             transition: background-color 0.2s;
+            font-size: 0.9rem;
         }
         
         .search-result-item:hover {
@@ -488,77 +487,87 @@
             border-bottom: none;
         }
         
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
             .app-container {
-                flex-direction: column;
+                flex-direction: row;
             }
             
             .controls-panel {
-                width: 100%;
-                height: 45vh;
+                width: 350px;
+                max-height: none;
+                box-shadow: -2px 0 10px rgba(0,0,0,0.1);
             }
             
             .map-container {
-                height: 55vh;
-            }
-            
-            header {
-                padding: 0.5rem 1rem;
-            }
-            
-            .logo h1 {
-                font-size: 1.2rem;
+                min-height: auto;
             }
         }
         
         .route-marker {
             background-color: var(--accent-color);
-            border: 3px solid white;
+            border: 2px solid white;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         
         .user-marker {
             background-color: var(--success-color);
-            border: 3px solid white;
+            border: 2px solid white;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             animation: pulse 2s infinite;
         }
         
         .start-marker {
             background-color: #4caf50;
-            border: 3px solid white;
+            border: 2px solid white;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         
         .end-marker {
             background-color: #ff5722;
-            border: 3px solid white;
+            border: 2px solid white;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         
         .custom-popup {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.9rem;
         }
         
         .popup-title {
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             color: var(--primary-color);
         }
         
         .popup-details {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
         }
         
         .driving-controls {
             display: flex;
             gap: 0.5rem;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .location-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background-color: #e8f5e9;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .location-status.error {
+            background-color: #ffebee;
+            color: #d32f2f;
         }
     </style>
 </head>
@@ -568,8 +577,8 @@
             <span>🗺️</span>
             <h1>TurvaGPS</h1>
         </div>
-        <div id="connection-status" style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span style="display: inline-block; width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%;"></span>
+        <div id="connection-status" style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="display: inline-block; width: 8px; height: 8px; background-color: #4caf50; border-radius: 50%;"></span>
             Ühendatud
         </div>
     </header>
@@ -590,13 +599,26 @@
         </div>
         
         <div class="controls-panel">
+            <div class="location-permission" id="location-permission">
+                <h3>📍 Asukoha luba</h3>
+                <p>Rakendus vajab sinu asukoha luba töötamiseks</p>
+                <button id="request-location" class="success" style="margin-top: 1rem;">
+                    <span>📍</span> Anna asukoha luba
+                </button>
+            </div>
+            
+            <div class="location-status" id="location-status">
+                <span>📍</span>
+                <span id="location-text">Asukohta otsin...</span>
+            </div>
+            
             <div class="route-planner">
                 <h3>🚗 Teekonna Plaanija</h3>
                 <div class="route-inputs">
                     <div style="position: relative;">
                         <div class="input-group">
                             <div class="input-label">Algus</div>
-                            <input type="text" id="start-input" placeholder="Vali alguspunkt...">
+                            <input type="text" id="start-input" placeholder="Vali alguspunkt..." readonly>
                         </div>
                         <div class="search-results" id="start-results"></div>
                     </div>
@@ -604,14 +626,14 @@
                     <div style="position: relative;">
                         <div class="input-group">
                             <div class="input-label">Lõpp</div>
-                            <input type="text" id="end-input" placeholder="Vali lõpp-punkt...">
+                            <input type="text" id="end-input" placeholder="Vali lõpp-punkt..." readonly>
                         </div>
                         <div class="search-results" id="end-results"></div>
                     </div>
                 </div>
                 
                 <div class="route-buttons">
-                    <button id="plan-route" class="success">
+                    <button id="plan-route" class="success" disabled>
                         <span>📋</span> Plaanija tee
                     </button>
                     <button id="start-journey" class="secondary" disabled>
@@ -632,9 +654,9 @@
                         <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
                     </div>
                     <div class="progress-text">
-                        <span>Teekonna algus</span>
+                        <span>Algus</span>
                         <span id="progress-percent">0%</span>
-                        <span>Sihtkoht</span>
+                        <span>Lõpp</span>
                     </div>
                 </div>
             </div>
@@ -647,12 +669,12 @@
                         <span id="route-distance">-</span>
                     </div>
                     <div class="route-item">
-                        <span>Hinnanguline aeg:</span>
+                        <span>Aeg:</span>
                         <span id="route-time">-</span>
                     </div>
                     <div class="route-item">
                         <span>Olek:</span>
-                        <span id="journey-status">Määramata</span>
+                        <span id="journey-status">Ootan luba</span>
                     </div>
                 </div>
                 
@@ -667,11 +689,11 @@
             </div>
             
             <div class="alerts-panel">
-                <h3>⚠️ Hoiatused teel</h3>
+                <h3>⚠️ Hoiatused</h3>
                 <div id="alerts-container">
                     <div class="alert-item">
                         <div class="alert-icon">ℹ️</div>
-                        <div>Teekonda pole plaanitud</div>
+                        <div>Oota asukoha laadimist</div>
                     </div>
                 </div>
             </div>
@@ -679,16 +701,8 @@
             <div class="settings-panel">
                 <h3>⚙️ Seaded</h3>
                 <div class="setting-item">
-                    <span>Kiiruseületuse hoiatused</span>
+                    <span>Kiiruse hoiatused</span>
                     <input type="checkbox" id="speed-alerts" checked>
-                </div>
-                <div class="setting-item">
-                    <span>Politsei hoiatused</span>
-                    <input type="checkbox" id="police-alerts" checked>
-                </div>
-                <div class="setting-item">
-                    <span>Kaamera hoiatused</span>
-                    <input type="checkbox" id="camera-alerts" checked>
                 </div>
                 <div class="setting-item">
                     <span>Häälhoiatused</span>
@@ -701,7 +715,7 @@
     <script>
         // Rakenduse peamised muutujad
         let map;
-        let userLocation = { lat: 59.4370, lng: 24.7536, address: "Tallinn, Estonia" };
+        let userLocation = null;
         let startPoint = null;
         let endPoint = null;
         let currentSpeed = 0;
@@ -716,24 +730,25 @@
         let endMarker;
         let routeLayer;
         let journeyInterval;
+        let locationWatchId = null;
         
         // Eeldefineeritud otsingutulemused
         const searchLocations = [
             { name: "Tallinna vanalinn", lat: 59.4370, lng: 24.7495, type: "Ajalooline koht" },
             { name: "Tartu keskväljak", lat: 58.3806, lng: 26.7220, type: "Keskväljak" },
-            { name: "Narva kindlus", lat: 59.3769, lng: 28.2025, type: "Ajalooline koht" },
             { name: "Pärnu rand", lat: 58.3850, lng: 24.4986, type: "Puhkekoht" },
             { name: "Saaremaa Kuressaare", lat: 58.2528, lng: 22.4850, type: "Linn" },
             { name: "Rakvere loss", lat: 59.3464, lng: 26.3558, type: "Ajalooline koht" },
             { name: "Viljandi järv", lat: 58.3639, lng: 25.5900, type: "Looduskoht" },
-            { name: "Haapsalu piiskopilinnus", lat: 58.9431, lng: 23.5394, type: "Ajalooline koht" },
-            { name: "Lahemaa rahvuspark", lat: 59.5667, lng: 25.8000, type: "Looduskoht" },
-            { name: "Hiiumaa Tahkuna", lat: 59.0167, lng: 22.6000, type: "Looduskoht" },
             { name: "Tallinna lennujaam", lat: 59.4133, lng: 24.8328, type: "Lennujaam" },
             { name: "Tartu Ülikool", lat: 58.3810, lng: 26.7190, type: "Haridusasutus" },
             { name: "Viru Keskus", lat: 59.4360, lng: 24.7565, type: "Kaubanduskeskus" },
             { name: "Solarise keskus", lat: 59.4322, lng: 24.7689, type: "Kaubanduskeskus" },
-            { name: "Ülemiste keskus", lat: 59.4211, lng: 24.7992, type: "Kaubanduskeskus" }
+            { name: "Ülemiste keskus", lat: 59.4211, lng: 24.7992, type: "Kaubanduskeskus" },
+            { name: "Rocca al Mare", lat: 59.4350, lng: 24.6389, type: "Kaubanduskeskus" },
+            { name: "Kadriorg", lat: 59.4392, lng: 24.7925, type: "Park" },
+            { name: "Lahemaa rahvuspark", lat: 59.5667, lng: 25.8000, type: "Looduskoht" },
+            { name: "Narva kindlus", lat: 59.3769, lng: 28.2025, type: "Ajalooline koht" }
         ];
         
         // DOM elemendid
@@ -757,9 +772,11 @@
         const notificationElement = document.getElementById('notification');
         const alertsContainer = document.getElementById('alerts-container');
         const speedAlertsCheckbox = document.getElementById('speed-alerts');
-        const policeAlertsCheckbox = document.getElementById('police-alerts');
-        const cameraAlertsCheckbox = document.getElementById('camera-alerts');
         const voiceAlertsCheckbox = document.getElementById('voice-alerts');
+        const locationPermissionElement = document.getElementById('location-permission');
+        const locationStatusElement = document.getElementById('location-status');
+        const locationTextElement = document.getElementById('location-text');
+        const requestLocationButton = document.getElementById('request-location');
         
         // Initsialiseeri rakendus
         function initApp() {
@@ -769,6 +786,7 @@
             initMap();
             
             // Kuula nuppe
+            requestLocationButton.addEventListener('click', requestLocationPermission);
             planRouteButton.addEventListener('click', planRoute);
             startJourneyButton.addEventListener('click', startJourney);
             pauseJourneyButton.addEventListener('click', togglePauseJourney);
@@ -777,7 +795,7 @@
             
             // Kuula otsingu sisestamist
             startInput.addEventListener('input', function() {
-                if (this.value.length > 2) {
+                if (this.value.length > 1) {
                     showSearchSuggestions(this.value, 'start');
                 } else {
                     startResults.style.display = 'none';
@@ -785,7 +803,7 @@
             });
             
             endInput.addEventListener('input', function() {
-                if (this.value.length > 2) {
+                if (this.value.length > 1) {
                     showSearchSuggestions(this.value, 'end');
                 } else {
                     endResults.style.display = 'none';
@@ -794,33 +812,176 @@
             
             // Kuula seadistusi
             speedAlertsCheckbox.addEventListener('change', updateSettings);
-            policeAlertsCheckbox.addEventListener('change', updateSettings);
-            cameraAlertsCheckbox.addEventListener('change', updateSettings);
             voiceAlertsCheckbox.addEventListener('change', updateSettings);
             
+            // Kontrolli, kas asukoha luba on juba antud
+            checkLocationPermission();
+            
             // Näita teavitust
-            showNotification("Tere tulemast TurvaGPS-i! Plaanige oma teekond.", "success");
+            showNotification("Tere tulemast TurvaGPS-i!", "success");
+        }
+        
+        // Kontrolli asukoha luba
+        function checkLocationPermission() {
+            if (navigator.permissions) {
+                navigator.permissions.query({name: 'geolocation'}).then(function(result) {
+                    if (result.state === 'granted') {
+                        // Luba on juba antud
+                        startLocationTracking();
+                        locationPermissionElement.style.display = 'none';
+                    } else if (result.state === 'prompt') {
+                        // Luba pole veel antud
+                        locationPermissionElement.style.display = 'block';
+                    } else {
+                        // Luba on keelatud
+                        showLocationError("Asukoha luba on keelatud. Palun luba see brauseri seadetest.");
+                    }
+                });
+            } else {
+                // Vanemad brauserid, mis ei toeta Permissions API-t
+                locationPermissionElement.style.display = 'block';
+            }
+        }
+        
+        // Küsi asukoha luba
+        function requestLocationPermission() {
+            locationTextElement.textContent = "Asukohta otsin...";
+            locationStatusElement.className = "location-status";
+            
+            if (!navigator.geolocation) {
+                showLocationError("Sinu brauser ei toeta asukoha teenust");
+                return;
+            }
+            
+            // Küsi asukohta ühekordselt
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Edukas asukoha saamine
+                    handleLocationSuccess(position);
+                    locationPermissionElement.style.display = 'none';
+                    
+                    // Alusta pidevat asukoha jälgimist
+                    startLocationTracking();
+                },
+                function(error) {
+                    // Viga asukoha saamisel
+                    handleLocationError(error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // Alusta pidevat asukoha jälgimist
+        function startLocationTracking() {
+            if (locationWatchId) {
+                navigator.geolocation.clearWatch(locationWatchId);
+            }
+            
+            locationWatchId = navigator.geolocation.watchPosition(
+                function(position) {
+                    handleLocationSuccess(position);
+                },
+                function(error) {
+                    handleLocationError(error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 10000
+                }
+            );
+        }
+        
+        // Edukas asukoha saamine
+        function handleLocationSuccess(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            userLocation = { lat, lng, accuracy };
+            
+            // Uuenda kasutaja markerit
+            if (userMarker) {
+                userMarker.setLatLng([lat, lng]);
+            } else {
+                userMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'user-marker',
+                        html: '📍',
+                        iconSize: [25, 25],
+                        iconAnchor: [12, 12]
+                    })
+                }).addTo(map).bindPopup(`<div class="custom-popup"><div class="popup-title">Sinu asukoht</div><div class="popup-details">Täpsus: ${Math.round(accuracy)}m</div></div>`);
+            }
+            
+            // Keskenda kaart kasutaja asukohale
+            map.setView([lat, lng], 15);
+            
+            // Uuenda staatust
+            locationTextElement.textContent = `Asukoht leitud (täpsus: ${Math.round(accuracy)}m)`;
+            locationStatusElement.className = "location-status";
+            
+            // Luba sisendväljad
+            startInput.readOnly = false;
+            endInput.readOnly = false;
+            
+            // Määra vaikimisi alguspunkt praeguseks asukohaks
+            if (!startPoint) {
+                startPoint = {
+                    name: "Praegune asukoht",
+                    lat: lat,
+                    lng: lng,
+                    type: "Praegune asukoht"
+                };
+                startInput.value = "Praegune asukoht";
+                checkRouteReady();
+            }
+            
+            showNotification("Asukoht leitud!", "success");
+        }
+        
+        // Viga asukoha saamisel
+        function handleLocationError(error) {
+            let errorMessage = "Asukoha määramise viga: ";
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "Asukoha luba keelati. Palun luba asukoha kasutamine brauseri seadetest.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Asukoha teave pole saadaval.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "Asukoha päring aegus.";
+                    break;
+                default:
+                    errorMessage = "Tundmatu viga asukoha määramisel.";
+                    break;
+            }
+            
+            showLocationError(errorMessage);
+        }
+        
+        // Näita asukoha viga
+        function showLocationError(message) {
+            locationTextElement.textContent = message;
+            locationStatusElement.className = "location-status error";
+            showNotification(message, "warning");
         }
         
         // Kaardi initsialiseerimine
         function initMap() {
-            // Loo kaart
-            map = L.map('map').setView([59.4370, 24.7536], 13);
+            // Loo kaart (alguses keskendatud Eestile)
+            map = L.map('map').setView([58.5953, 25.0136], 7);
             
             // Lisa kaardikiht
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
-            
-            // Lisa kasutaja marker
-            userMarker = L.marker([userLocation.lat, userLocation.lng], {
-                icon: L.divIcon({
-                    className: 'user-marker',
-                    html: '📍',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
-                })
-            }).addTo(map).bindPopup(`<div class="custom-popup"><div class="popup-title">Sinu asukoht</div><div class="popup-details">${userLocation.address}</div></div>`);
             
             console.log("Kaart initsialiseeritud");
         }
@@ -829,7 +990,7 @@
         function showSearchSuggestions(query, type) {
             const results = searchLocations.filter(location => 
                 location.name.toLowerCase().includes(query.toLowerCase())
-            ).slice(0, 5); // Piirdu 5 tulemusega
+            ).slice(0, 5);
             
             const resultsContainer = type === 'start' ? startResults : endResults;
             
@@ -892,8 +1053,8 @@
                 icon: L.divIcon({
                     className: 'start-marker',
                     html: '🟢',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
+                    iconSize: [25, 25],
+                    iconAnchor: [12, 12]
                 })
             }).addTo(map).bindPopup(`<div class="custom-popup"><div class="popup-title">Alguspunkt</div><div class="popup-details">${startPoint.name}</div></div>`).openPopup();
             
@@ -902,8 +1063,8 @@
                 icon: L.divIcon({
                     className: 'end-marker',
                     html: '🔴',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
+                    iconSize: [25, 25],
+                    iconAnchor: [12, 12]
                 })
             }).addTo(map).bindPopup(`<div class="custom-popup"><div class="popup-title">Lõpp-punkt</div><div class="popup-details">${endPoint.name}</div></div>`);
             
@@ -921,11 +1082,6 @@
             
             // Näita teavitust
             showNotification(`Marsruut plaanitud: ${startPoint.name} → ${endPoint.name}`, "success");
-            
-            // Mängi kinnitushääl
-            if (voiceAlertsEnabled) {
-                playVoiceAlert(`Marsruut plaanitud. Alusta sõitu kui oled valmis.`);
-            }
         }
         
         // Marsruudi joonistamine
@@ -937,7 +1093,7 @@
             
             if (!startPoint || !endPoint) return;
             
-            // Lihtne marsruudi simulatsioon (tegelikus rakenduses kasuta marsruutimise API-t)
+            // Lihtne marsruudi simulatsioon
             const routeCoordinates = [
                 [startPoint.lat, startPoint.lng],
                 [endPoint.lat, endPoint.lng]
@@ -945,7 +1101,7 @@
             
             routeLayer = L.polyline(routeCoordinates, {
                 color: '#3f51b5',
-                weight: 6,
+                weight: 4,
                 opacity: 0.7,
                 lineJoin: 'round'
             }).addTo(map);
@@ -954,7 +1110,7 @@
             map.fitBounds([
                 [startPoint.lat, startPoint.lng],
                 [endPoint.lat, endPoint.lng]
-            ], { padding: [50, 50] });
+            ], { padding: [20, 20] });
         }
         
         // Marsruudi info uuendamine
@@ -987,6 +1143,7 @@
             
             routeDistanceElement.textContent = distanceText;
             routeTimeElement.textContent = timeText;
+            journeyStatusElement.textContent = "Marsruut plaanitud";
         }
         
         // Sõidu alustamine
@@ -999,11 +1156,6 @@
             journeyPaused = false;
             journeyProgress = 0;
             
-            // Uuenda kasutaja asukohta alguspunkti
-            userLocation.lat = startPoint.lat;
-            userLocation.lng = startPoint.lng;
-            userMarker.setLatLng([userLocation.lat, userLocation.lng]);
-            
             // Uuenda UI-d
             journeyStatusElement.textContent = "Sõidan...";
             startJourneyButton.disabled = true;
@@ -1014,12 +1166,7 @@
             startJourneySimulation();
             
             // Näita teavitust
-            showNotification("Sõit algas! Jälgi oma kiirust ja liiklusmärke.", "success");
-            
-            // Mängi kinnitushääl
-            if (voiceAlertsEnabled) {
-                playVoiceAlert("Sõit algas. Head teed!");
-            }
+            showNotification("Sõit algas! Jälgi oma kiirust.", "success");
         }
         
         // Sõidu simulatsioon
@@ -1047,7 +1194,9 @@
                     const progress = journeyProgress / 100;
                     userLocation.lat = startPoint.lat + (endPoint.lat - startPoint.lat) * progress;
                     userLocation.lng = startPoint.lng + (endPoint.lng - startPoint.lng) * progress;
-                    userMarker.setLatLng([userLocation.lat, userLocation.lng]);
+                    if (userMarker) {
+                        userMarker.setLatLng([userLocation.lat, userLocation.lng]);
+                    }
                 }
                 
                 // Simuleeri kiiruse muutumist
@@ -1120,11 +1269,6 @@
             
             // Näita teavitust
             showNotification("Õnnitlused! Olete jõudnud sihtkohta.", "success");
-            
-            // Mängi kinnitushääl
-            if (voiceAlertsEnabled) {
-                playVoiceAlert("Õnnitlused! Olete jõudnud sihtkohta.");
-            }
         }
         
         // Sõidu lähtestamine
@@ -1261,8 +1405,7 @@
             const alerts = [
                 { type: 'police', text: 'Politsei kontroll 2 km jooksul', icon: '🚓' },
                 { type: 'camera', text: 'Kiiruskaamera 5 km jooksul', icon: '📹' },
-                { type: 'construction', text: 'Tee-ehitus 8 km jooksul', icon: '🚧' },
-                { type: 'warning', text: 'Libedus 12 km jooksul', icon: '⚠️' }
+                { type: 'construction', text: 'Tee-ehitus 8 km jooksul', icon: '🚧' }
             ];
             
             alerts.forEach(alert => {
@@ -1284,7 +1427,6 @@
             if (voiceAlertsEnabled) {
                 voiceAlertButton.classList.remove('muted');
                 voiceAlertButton.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
-                playVoiceAlert('Häälhoiatused sisse lülitatud');
             } else {
                 voiceAlertButton.classList.add('muted');
                 voiceAlertButton.style.background = 'linear-gradient(135deg, #757575, #9e9e9e)';
