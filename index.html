@@ -1,274 +1,661 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="et">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Metsa-kaamera — puuliigi, sortimendi ja rikete tuvastus (Automaat + Manuaal)</title>
-  <style>
-    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial;margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px;background:#f0f2f5}
-    .stage{position:relative;width:100%;max-width:900px;background:#000;color:#fff;border-radius:10px;overflow:hidden}
-    video{width:100%;height:auto;display:block;background:#000}
-    canvas.overlay{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    button,select,input[type=file],input[type=number]{padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#000}
-    label{display:flex;gap:6px;align-items:center}
-    .status{font-size:14px}
-    .hint{font-size:13px;color:#444;max-width:900px}
-    .log-area{width:100%;max-width:900px;height:220px;overflow:auto;background:#111;color:#0f0;padding:8px;border-radius:6px;font-family:monospace}
-    .info-panel{width:100%;max-width:900px;background:#fff;color:#111;padding:10px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-    .info-row{display:flex;gap:12px;flex-wrap:wrap}
-    .info-item{min-width:160px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puidu Tuvastamine ja Analüüs</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+            --light-color: #e8f5e9;
+            --dark-color: #1b5e20;
+            --text-color: #333;
+            --error-color: #d32f2f;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .app-description {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .app-description h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-card i {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input-section, .results-section {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .input-section h2, .results-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .input-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .input-method {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .input-method:hover {
+            border-color: var(--accent-color);
+            background-color: var(--light-color);
+        }
+        
+        .input-method.active {
+            border-color: var(--primary-color);
+            background-color: var(--light-color);
+        }
+        
+        .camera-container, .upload-container {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .camera-container.active, .upload-container.active {
+            display: block;
+        }
+        
+        #camera-preview {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background-color: #eee;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .camera-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--dark-color);
+        }
+        
+        button.secondary {
+            background-color: #757575;
+        }
+        
+        button.secondary:hover {
+            background-color: #616161;
+        }
+        
+        #upload-input {
+            margin-bottom: 1rem;
+        }
+        
+        #analyze-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+        
+        .results-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .tree-result {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tree-species {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .tree-quality {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .quality-A {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .quality-B {
+            background-color: #8bc34a;
+            color: white;
+        }
+        
+        .quality-C {
+            background-color: #ffc107;
+            color: black;
+        }
+        
+        .quality-D {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .quality-paper {
+            background-color: #2196f3;
+            color: white;
+        }
+        
+        .quality-firewood {
+            background-color: #795548;
+            color: white;
+        }
+        
+        .tree-details {
+            margin-bottom: 0.5rem;
+        }
+        
+        .tree-damages {
+            margin-bottom: 0.5rem;
+        }
+        
+        .damage-tag {
+            display: inline-block;
+            background-color: #ffebee;
+            color: var(--error-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tree-value {
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        .logs-section {
+            margin-top: 2rem;
+        }
+        
+        .logs-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        #logs-content {
+            background-color: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        footer {
+            background-color: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+    </style>
 </head>
 <body>
-  <h2>Metsa-kaamera — puuliigi, sortimendi ja rikete tuvastus</h2>
-  <div class="stage">
-    <video id="video" autoplay playsinline></video>
-    <canvas id="overlay" class="overlay"></canvas>
-  </div>
-
-  <div class="controls">
-    <button id="startBtn">Alusta</button>
-    <button id="stopBtn" disabled>Peata</button>
-    <label>Kaamera: <select id="camSelect"></select></label>
-    <label>Liikumise tundlikkus: <input id="sensitivity" type="range" min="0.5" max="10" step="0.1" value="2"><span id="sensVal">2.0</span></label>
-    <label>Referentsobjekt pikkus (cm): <input id="refCm" type="number" step="1" value="100" style="width:90px"></label>
-  </div>
-
-  <div class="controls">
-    <label>Lae puuliigi mudel (TFJS): <input id="speciesModel" type="file" accept=".json,.bin"></label>
-    <label>Lae rikete mudel (TFJS): <input id="damageModel" type="file" accept=".json,.bin"></label>
-    <label>Autotuvastuse intervall (s): <input id="autoInterval" type="number" min="1" value="5" style="width:70px"></label>
-  </div>
-
-  <div class="controls">
-    <button id="captureBtn">Pildista & analüüsi (manuaal)</button>
-    <button id="toggleAutoBtn">Lülita automaatne tuvastus: Väljas</button>
-    <button id="downloadLogBtn">Laadi alla log (.txt)</button>
-  </div>
-
-  <div class="status" id="status">Staatus: ootab käivitamist</div>
-  <div class="hint">Märkused: laadida saab TFJS formaadis(mudel.json + weight sharded failid). Auto-tuvastus jookseb perioodiliselt isegi kui kaamera seisab. Logi salvestub lihtsas inimloetavas tekstivormingus nagu soovisid.</div>
-
-  <div class="info-panel" id="infoPanel">
-    <div><strong>Viimane tuvastus</strong></div>
-    <div class="info-row">
-      <div class="info-item">SORTIMENT: <span id="outSortiment">-</span></div>
-      <div class="info-item">PUULIIK: <span id="outSpecies">-</span></div>
-      <div class="info-item">KAHJUSTUSED: <span id="outDamage">-</span></div>
-      <div class="info-item">UMBKAUDNE VÄÄRTUS: <span id="outValue">-</span></div>
+    <header>
+        <div class="container">
+            <h1>Puidu Tuvastamine ja Analüüs</h1>
+            <p>Tuvasta puuliike, sorteeri ja analüüsi kahjustusi kaamera abil</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section class="app-description">
+            <h2>Tere tulemast puidu tuvastamise ja analüüsi rakendusse!</h2>
+            <p>See rakendus võimaldab teil tuvastada puuliike, nende kvaliteeti ja kahjustusi läbi kaamera või piltide üleslaadimise. Saate hinnata puidu väärtust ja genereerida detailse logi faili kõigist tuvastatud puudest.</p>
+        </section>
+        
+        <section class="features-grid">
+            <div class="feature-card">
+                <i>🌳</i>
+                <h3>Puiduliikide tuvastamine</h3>
+                <p>Tuvastab okas- ja lehtpuuliike nagu kuusk, mänd, kask, haab jne.</p>
+            </div>
+            <div class="feature-card">
+                <i>📊</i>
+                <h3>Sortimentide määramine</h3>
+                <p>Määrab sobivaima sortimendi (saepalk, vineeripakk, paberipuit jne).</p>
+            </div>
+            <div class="feature-card">
+                <i>🔍</i>
+                <h3>Kahjustuste analüüs</h3>
+                <p>Tuvastab köverused, mädanikud, mõlu, rebendid ja muud rikked.</p>
+            </div>
+            <div class="feature-card">
+                <i>💰</i>
+                <h3>Väärtuse hindamine</h3>
+                <p>Annab umbkaudse maksumushinnangu vastavalt kvaliteedile ja sortimendile.</p>
+            </div>
+        </section>
+        
+        <div class="main-content">
+            <section class="input-section">
+                <h2>Puidu analüüs</h2>
+                <div class="input-methods">
+                    <div class="input-method active" id="camera-method">
+                        <h3>Kaamera</h3>
+                        <p>Kasuta oma kaamerat reaalajas piltide tegemiseks</p>
+                    </div>
+                    <div class="input-method" id="upload-method">
+                        <h3>Pildi üleslaadimine</h3>
+                        <p>Laadi üles olemasolevad pildid puidust</p>
+                    </div>
+                </div>
+                
+                <div class="camera-container active" id="camera-container">
+                    <div id="camera-preview"></div>
+                    <div class="camera-controls">
+                        <button id="start-camera">Käivita kaamera</button>
+                        <button id="capture-btn" disabled>Pildista</button>
+                        <button id="retake-btn" disabled class="secondary">Tee uus pilt</button>
+                    </div>
+                </div>
+                
+                <div class="upload-container" id="upload-container">
+                    <input type="file" id="upload-input" accept="image/*" multiple>
+                    <p>Valige üks või mitu pilti puidust analüüsiks</p>
+                </div>
+                
+                <button id="analyze-btn" disabled>Analüüsi puit</button>
+            </section>
+            
+            <section class="results-section">
+                <h2>Tulemused</h2>
+                <div class="results-container" id="results-container">
+                    <p>Tulemused kuvatakse siin pärast analüüsi.</p>
+                </div>
+            </section>
+        </div>
+        
+        <section class="logs-section">
+            <h2>Logi fail</h2>
+            <div class="logs-controls">
+                <p>Kõikide tuvastatud puude koondandmed</p>
+                <button id="download-logs">Laadi logi alla</button>
+            </div>
+            <div id="logs-content">
+                Logi sisu kuvatakse siin pärast analüüsi.
+            </div>
+        </section>
     </div>
-  </div>
+    
+    <footer>
+        <div class="container">
+            <p>Puidu Tuvastamise ja Analüüsi Rakendus</p>
+            <p>Kasutab AI-tehnoloogiat puuliikide, sortimentide ja kahjustuste tuvastamiseks</p>
+        </div>
+    </footer>
 
-  <div class="log-area" id="logArea">Logi tühi — tuvastused ilmuvad siia.</div>
-
-  <!-- TensorFlow.js ja COCO-SSD CDN-id -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
-
-  <script>
-    // DOM
-    const video = document.getElementById('video');
-    const overlay = document.getElementById('overlay');
-    const ctx = overlay.getContext('2d');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const statusEl = document.getElementById('status');
-    const camSelect = document.getElementById('camSelect');
-    const sensitivity = document.getElementById('sensitivity');
-    const sensVal = document.getElementById('sensVal');
-    const captureBtn = document.getElementById('captureBtn');
-    const downloadLogBtn = document.getElementById('downloadLogBtn');
-    const logArea = document.getElementById('logArea');
-    const speciesModelInput = document.getElementById('speciesModel');
-    const damageModelInput = document.getElementById('damageModel');
-    const refCmInput = document.getElementById('refCm');
-    const autoIntervalInput = document.getElementById('autoInterval');
-    const toggleAutoBtn = document.getElementById('toggleAutoBtn');
-
-    const outSortiment = document.getElementById('outSortiment');
-    const outSpecies = document.getElementById('outSpecies');
-    const outDamage = document.getElementById('outDamage');
-    const outValue = document.getElementById('outValue');
-
-    let stream = null;
-    let cocoModel = null; // general detector
-    let speciesModel = null;
-    let damageModel = null;
-    let animationId = null;
-    let prevImageData = null;
-    let logTextLines = [];
-    let autoTimer = null;
-    let autoEnabled = false;
-
-    let motionThresholdRatio = parseFloat(sensitivity.value);
-    sensVal.textContent = motionThresholdRatio.toFixed(1);
-    sensitivity.addEventListener('input', () => { motionThresholdRatio = parseFloat(sensitivity.value); sensVal.textContent = motionThresholdRatio.toFixed(1); });
-
-    async function listCameras(){
-      try{
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const cams = devices.filter(d => d.kind === 'videoinput');
-        camSelect.innerHTML = '';
-        cams.forEach((c, i) => { const opt=document.createElement('option'); opt.value=c.deviceId; opt.text=c.label||`Kaamera ${i+1}`; camSelect.appendChild(opt); });
-      }catch(e){ console.warn('Seadmete loetelu ebaõnnestus', e); }
-    }
-
-    async function startCamera(){
-      stopCamera();
-      const deviceId = camSelect.value || undefined;
-      const constraints = { video: { deviceId: deviceId ? { exact: deviceId } : undefined, facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false };
-      try{
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = stream;
-        await video.play();
-        overlay.width = video.videoWidth; overlay.height = video.videoHeight; prevImageData = null;
-        status('Kaamera käivitatud. Laadin COCO-SSD...');
-        if(!cocoModel){ cocoModel = await cocoSsd.load(); status('COCO-SSD laetud.'); } else status('COCO-SSD juba laetud.');
-        startBtn.disabled = true; stopBtn.disabled = false; startLoop();
-        // kui automaatne on sisse lülitatud, alusta timerit
-        if(autoEnabled) enableAutoTimer();
-      }catch(err){ console.error(err); status('Kaamera viga: ' + err.message); }
-    }
-
-    function stopCamera(){ if(animationId) cancelAnimationFrame(animationId); animationId=null; if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } startBtn.disabled=false; stopBtn.disabled=true; status('Peatatatud.'); ctx.clearRect(0,0,overlay.width, overlay.height); disableAutoTimer(); }
-    function status(t){ statusEl.textContent = 'Staatus: ' + t; }
-
-    // liikumise tuvastus (saame sellest loobuda kui tahame automaatset tuvastust alati)
-    function detectMotion(imageData){ if(!prevImageData){ prevImageData = imageData; return false; } const curr=imageData.data, prev=prevImageData.data; let diffCount=0; for(let i=0;i<curr.length;i+=24){ const gray1=(curr[i]+curr[i+1]+curr[i+2])/3; const gray0=(prev[i]+prev[i+1]+prev[i+2])/3; if(Math.abs(gray1-gray0)>20) diffCount++; } prevImageData=imageData; const sampled=(imageData.width*imageData.height)/9; const ratio=diffCount/sampled; const threshold=0.01*motionThresholdRatio; return ratio>threshold; }
-
-    // laadime TFJS mudeli browserFiles abil
-    async function loadTFJSModelFromFile(input){ if(!input.files || input.files.length===0) return null; const files = Array.from(input.files); try{ const m = await tf.loadGraphModel(tf.io.browserFiles(files)); return m; }catch(e){ try{ const m2 = await tf.loadLayersModel(tf.io.browserFiles(files)); return m2; }catch(e2){ console.error('Mudeli laadimine ebaõnnestus', e2); return null; } } }
-
-    speciesModelInput.addEventListener('change', async ()=>{ status('Laen puuliigi mudelit...'); speciesModel = await loadTFJSModelFromFile(speciesModelInput); if(speciesModel) status('Puuliigi mudel laetud.'); else status('Puuliigi mudeli laadimine ebaõnnestus.'); });
-    damageModelInput.addEventListener('change', async ()=>{ status('Laen rikete mudelit...'); damageModel = await loadTFJSModelFromFile(damageModelInput); if(damageModel) status('Rikete mudel laetud.'); else status('Rikete mudeli laadimine ebaõnnestus.'); });
-
-    // käsitsi pildistamine
-    captureBtn.addEventListener('click', async ()=>{ if(!video.srcObject){ status('Alusta kaamerat enne pildistamist'); return; } captureBtn.disabled=true; try{ await analyseFrame(true); }finally{ captureBtn.disabled=false; } });
-
-    // auto tuvastuse lüliti
-    toggleAutoBtn.addEventListener('click', ()=>{ autoEnabled = !autoEnabled; toggleAutoBtn.textContent = `Lülita automaatne tuvastus: ${autoEnabled? 'Sees':'Väljas'}`; if(autoEnabled) enableAutoTimer(); else disableAutoTimer(); });
-
-    function enableAutoTimer(){ disableAutoTimer(); const s = Math.max(1, Number(autoIntervalInput.value)||5); autoTimer = setInterval(()=>{ if(video.srcObject) analyseFrame(false); }, s*1000); status('Automaatne tuvastus sisse (iga ' + s + 's)'); }
-    function disableAutoTimer(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; status('Automaatne tuvastus välja'); } }
-
-    // log allalaadimine .txt kujul
-    downloadLogBtn.addEventListener('click', ()=>{
-      if(logTextLines.length===0){ alert('Log tühi.'); return; }
-      const blob = new Blob([logTextLines.join('
-
-')], {type:'text/plain;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download = `metsatuvastus_log_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'_')}.txt`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    });
-
-    // põhifunktsioon: analüüsi kaadrit; parameter forceDraw - kui manuaalne, siis alati joonista ja logi
-    async function analyseFrame(forceDraw=false){
-      const off = document.createElement('canvas'); const w = video.videoWidth, h = video.videoHeight; off.width=w; off.height=h; const offCtx = off.getContext('2d'); offCtx.drawImage(video,0,0,w,h);
-      const imageData = offCtx.getImageData(0,0,w,h);
-
-      // detect objects with coco to find candidates; fallback to segmentation-like regions
-      status('Analüüsin kaadrit — otsin objekte...');
-      let detections = [];
-      try{ detections = await cocoModel.detect(video); }catch(e){ console.warn('COCO detect viga', e); }
-      let regions = [];
-      const candidates = detections.filter(d=>d.score>0.35 && d.class!=='person');
-      if(candidates.length>0){ regions = candidates.map(c=>({bbox:c.bbox, score:c.score, class:c.class})); }
-      else {
-        // lihtne tumedamate komponentide segmentatsioon
-        const gray = new Uint8ClampedArray(w*h);
-        for(let i=0;i<w*h;i++){ const r=imageData.data[i*4], g=imageData.data[i*4+1], b=imageData.data[i*4+2]; gray[i]=0.3*r+0.59*g+0.11*b; }
-        const meanGray = gray.reduce((a,b)=>a+b,0)/(w*h);
-        const mask = new Uint8ClampedArray(w*h);
-        for(let i=0;i<w*h;i++) mask[i] = gray[i] < meanGray*0.95 ? 1:0;
-        const seen = new Uint8Array(w*h);
-        function bboxFromComponent(sx,sy){ let minx=sx,maxx=sx,miny=sy,maxy=sy; const stack=[[sx,sy]]; seen[sy*w+sx]=1; while(stack.length){ const [x,y]=stack.pop(); for(const dx of [-1,0,1]) for(const dy of [-1,0,1]){ const nx=x+dx, ny=y+dy; if(nx<0||ny<0||nx>=w||ny>=h) continue; const idx=ny*w+nx; if(mask[idx] && !seen[idx]){ seen[idx]=1; stack.push([nx,ny]); if(nx<minx)minx=nx; if(nx>maxx)maxx=nx; if(ny<miny)miny=ny; if(ny>maxy)maxy=ny; } } } return {x:minx,y:miny,w:(maxx-minx),h:(maxy-miny)}; }
-        for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const idx=y*w+x; if(mask[idx] && !seen[idx]){ const bb=bboxFromComponent(x,y); if(bb.w*bb.h > (w*h*0.002)) regions.push({bbox:[bb.x,bb.y,bb.w,bb.h], score:0.5, class:'pile_candidate'}); } } }
-      }
-
-      // kui pole regioone ja ei ole forceDraw, siis kontrollime liikumist: kui liikumist ei ole ja ei ole automaatseid/force -> lõpetame
-      if(regions.length===0 && !forceDraw){ const motion = detectMotion(imageData); if(!motion){ status('Ei leitud objekte ega liikumist.'); return; } }
-
-      // joonistame overlay ja loome kokkuvõtte iga regiooni kohta
-      ctx.clearRect(0,0,overlay.width,overlay.height);
-      const refCm = parseFloat(refCmInput.value) || 100;
-      let lastSummary = {sortiment:'-', species:'-', damage:'-', value:'-'};
-
-      const frameResults = [];
-      for(const r of regions){
-        const [x,y,wbox,hbox] = r.bbox.map(v=>Math.round(v)); if(wbox<=0||hbox<=0) continue;
-        const crop = offCtx.getImageData(x,y,wbox,hbox);
-        // draw box
-        ctx.strokeStyle = 'lime'; ctx.lineWidth = Math.max(2, Math.round(overlay.width/300)); ctx.strokeRect(x,y,wbox,hbox);
-
-        // species predict
-        let species = {class:'unknown', score:0};
-        if(speciesModel){ try{ const imgTensor = tf.browser.fromPixels(crop).resizeBilinear([224,224]).toFloat().expandDims(0).div(255.0); const preds = await speciesModel.predict(imgTensor); const arr = preds.data ? await preds.data() : await preds.array(); const maxIdx = arr.indexOf(Math.max(...arr)); species = {class:`class_${maxIdx}`, score:arr[maxIdx]}; imgTensor.dispose(); if(preds.dispose) preds.dispose(); }catch(e){ console.error('species predict err', e); } }
-
-        // damage predict
-        let damage = {class:'unknown', score:0};
-        if(damageModel){ try{ const imgT = tf.browser.fromPixels(crop).resizeBilinear([224,224]).toFloat().expandDims(0).div(255.0); const p = await damageModel.predict(imgT); const parr = p.data ? await p.data() : await p.array(); const midx = parr.indexOf(Math.max(...parr)); damage = {class:`class_${midx}`, score:parr[midx]}; imgT.dispose(); if(p.dispose) p.dispose(); }catch(e){ console.error('damage predict err', e); } }
-
-        // diameter estimation
-        const pxToCm = refCm / video.videoWidth; const approxDiameterCm = Math.round(Math.min(wbox,hbox) * pxToCm);
-        // sortiment heuristic
-        let sortiment = 'unknown'; if(approxDiameterCm >= 24) sortiment = 'palk'; else if(approxDiameterCm >= 10) sortiment = 'peenpalk / lati'; else sortiment = 'paberipuit / küttepuu';
-        // volume and price
-        const lengthM = (hbox * pxToCm)/100; const dM = approxDiameterCm/100; const volumeM3 = Math.PI/4 * dM*dM * Math.max(0.1, lengthM); let pricePerM3 = 40; const speciesName = (species.class || '').toLowerCase(); if(/pine|mänd|kuusk|spruce|pine/i.test(speciesName)) pricePerM3 = 30; else if(/kask|haab|birch|aspen|oak|tamm/i.test(speciesName)) pricePerM3 = 80; const approxPriceEUR = Math.round(volumeM3 * pricePerM3);
-
-        // draw labels on overlay (both top-left and bottom)
-        const label = `${species.class} | ${approxDiameterCm} cm | ${sortiment}`;
-        ctx.font = `${Math.max(12, Math.round(overlay.width/60))}px sans-serif`;
-        const textW = ctx.measureText(label).width + 8; const textH = parseInt(ctx.font,10) + 6;
-        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(x, y - textH, textW, textH);
-        ctx.fillStyle='white'; ctx.fillText(label, x+4, y-4);
-
-        // update last summary
-        lastSummary = { sortiment, species: species.class, damage: damage.class, value: approxPriceEUR + ' €' };
-
-        frameResults.push({ sortiment, species: species.class, damage: damage.class, approxDiameterCm, approxPriceEUR });
-      }
-
-      // update info panel (use lastSummary)
-      outSortiment.textContent = lastSummary.sortiment;
-      outSpecies.textContent = lastSummary.species;
-      outDamage.textContent = lastSummary.damage;
-      outValue.textContent = lastSummary.value;
-
-      // push to textual log in requested format (each regiooni eraldi plokk)
-      frameResults.forEach(r=>{
-        const lines = [];
-        lines.push(`SORTIMENT: ${r.sortiment}`);
-        lines.push(`PUULIIK: ${r.species}`);
-        lines.push(`KAHJUSTUSED: ${r.damage}`);
-        lines.push(`UMBKAUDNE VÄÄRTUS: ${r.approxPriceEUR} €`);
-        logTextLines.push(lines.join('
-'));
-      });
-
-      // show log preview (viimased 20 kirjet)
-      const preview = logTextLines.slice(-20).join('
-
-');
-      logArea.textContent = preview || 'Log tühi — analüüsid ilmuvad siia.';
-
-      status('Analüüs lõpetatud ja logitud. Kuvatud nii overlay-l kui info-paneelil.');
-    }
-
-    async function startLoop(){
-      const off = document.createElement('canvas'); const offCtx = off.getContext('2d'); off.width=video.videoWidth; off.height=video.videoHeight; overlay.width=off.width; overlay.height=off.height;
-      async function loop(){ if(video.paused || video.ended){ animationId = requestAnimationFrame(loop); return; } offCtx.drawImage(video,0,0,off.width,off.height); const imageData = offCtx.getImageData(0,0,off.width,off.height); const motion = detectMotion(imageData); ctx.clearRect(0,0,overlay.width,overlay.height); if(motion){ status('Liikumine tuvastatud — automaatne analüüs võib toimuda'); ctx.fillStyle='rgba(255,0,0,0.08)'; ctx.fillRect(0,0,overlay.width,overlay.height); } else { status('Kaamera ootab — automaatne tuvastus võib jooksvalt analüüsida vastavalt intervallile.'); } animationId = requestAnimationFrame(loop); }
-      loop();
-    }
-
-    // eventid
-    startBtn.addEventListener('click', startCamera);
-    stopBtn.addEventListener('click', stopCamera);
-    camSelect.addEventListener('change', async ()=>{ if(stream) await startCamera(); });
-
-    // init
-    (async ()=>{ if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ status('Brauser ei toeta getUserMedia API-d. Kasuta kaasaegset brauserit.'); return; } await listCameras(); for(let i=0;i<camSelect.options.length;i++){ if(/back|rear|environment/i.test(camSelect.options[i].text)) { camSelect.selectedIndex=i; break; } } })();
-
-  </script>
+    <script>
+        // Elementide valik
+        const cameraMethod = document.getElementById('camera-method');
+        const uploadMethod = document.getElementById('upload-method');
+        const cameraContainer = document.getElementById('camera-container');
+        const uploadContainer = document.getElementById('upload-container');
+        const startCameraBtn = document.getElementById('start-camera');
+        const captureBtn = document.getElementById('capture-btn');
+        const retakeBtn = document.getElementById('retake-btn');
+        const uploadInput = document.getElementById('upload-input');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const logsContent = document.getElementById('logs-content');
+        const downloadLogsBtn = document.getElementById('download-logs');
+        
+        // Kaamera muutujad
+        let stream = null;
+        let capturedImage = null;
+        
+        // Sisendmeetodi vahetamine
+        cameraMethod.addEventListener('click', () => {
+            cameraMethod.classList.add('active');
+            uploadMethod.classList.remove('active');
+            cameraContainer.classList.add('active');
+            uploadContainer.classList.remove('active');
+            analyzeBtn.disabled = !capturedImage && uploadInput.files.length === 0;
+        });
+        
+        uploadMethod.addEventListener('click', () => {
+            uploadMethod.classList.add('active');
+            cameraMethod.classList.remove('active');
+            uploadContainer.classList.add('active');
+            cameraContainer.classList.remove('active');
+            analyzeBtn.disabled = !capturedImage && uploadInput.files.length === 0;
+        });
+        
+        // Kaamera funktsionaalsus
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const preview = document.getElementById('camera-preview');
+                preview.srcObject = stream;
+                captureBtn.disabled = false;
+                startCameraBtn.disabled = true;
+            } catch (error) {
+                console.error('Kaamera käivitamine ebaõnnestus:', error);
+                alert('Kaamera käivitamine ebaõnnestus. Palun kontrollige kaamera õiguseid.');
+            }
+        });
+        
+        captureBtn.addEventListener('click', () => {
+            const preview = document.getElementById('camera-preview');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = preview.videoWidth;
+            canvas.height = preview.videoHeight;
+            context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+            
+            capturedImage = canvas.toDataURL('image/jpeg');
+            preview.srcObject = null;
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Näita pilti eelvaates
+            preview.style.backgroundImage = `url(${capturedImage})`;
+            preview.style.backgroundSize = 'cover';
+            preview.style.backgroundPosition = 'center';
+            
+            captureBtn.disabled = true;
+            retakeBtn.disabled = false;
+            analyzeBtn.disabled = false;
+        });
+        
+        retakeBtn.addEventListener('click', () => {
+            const preview = document.getElementById('camera-preview');
+            preview.style.backgroundImage = 'none';
+            capturedImage = null;
+            retakeBtn.disabled = true;
+            analyzeBtn.disabled = true;
+            startCameraBtn.disabled = false;
+            startCameraBtn.click();
+        });
+        
+        // Üleslaadimise funktsionaalsus
+        uploadInput.addEventListener('change', () => {
+            analyzeBtn.disabled = uploadInput.files.length === 0;
+        });
+        
+        // Analüüsi nupp
+        analyzeBtn.addEventListener('click', () => {
+            // Simuleerime analüüsi tulemusi
+            simulateAnalysis();
+        });
+        
+        // Logi allalaadimine
+        downloadLogsBtn.addEventListener('click', () => {
+            const logsText = logsContent.textContent;
+            const blob = new Blob([logsText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'puidu_analyys_logi.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        // Simuleeritud analüüsifunktsioon
+        function simulateAnalysis() {
+            // Tühjenda eelmised tulemused
+            resultsContainer.innerHTML = '';
+            logsContent.textContent = '';
+            
+            // Puuliigid ja nende omadused
+            const treeSpecies = [
+                {
+                    name: 'Kuusk',
+                    type: 'okaspuu',
+                    possibleQualities: ['A', 'B', 'C', 'D', 'paberipuit', 'küttepuit'],
+                    commonDamages: ['lihtköverus', 'liitköverus', 'mõlu', 'sagartütakus', 'südamemädanik'],
+                    valueRange: { min: 40, max: 120 }
+                },
+                {
+                    name: 'Mänd',
+                    type: 'okaspuu',
+                    possibleQualities: ['A', 'B', 'C', 'D', 'paberipuit', 'küttepuit'],
+                    commonDamages: ['lihtköverus', 'mõlu', 'tulioks', 'südamemädanik'],
+                    valueRange: { min: 35, max: 100 }
+                },
+                {
+                    name: 'Kask',
+                    type: 'lehtpuu',
+                    possibleQualities: ['vineeripakk', 'spoonipakk', 'saepakk', 'paberipuit', 'küttepuit'],
+                    commonDamages: ['lihtköverus', 'oksad', 'pehmemädanik', 'värvimuutus'],
+                    valueRange: { min: 50, max: 150 }
+                },
+                {
+                    name: 'Haab',
+                    type: 'lehtpuu',
+                    possibleQualities: ['saepakk', 'paberipuit', 'küttepuit'],
+                    commonDamages: ['lihtköverus', 'oksad', 'pehmemädanik'],
+                    valueRange: { min: 30, max: 80 }
+                },
+                {
+                    name: 'Saar',
+                    type: 'lehtpuu',
+                    possibleQualities: ['saepakk', 'paberipuit', 'küttepuit'],
+                    commonDamages: ['lihtköverus', 'oksad', 'südamemädanik'],
+                    valueRange: { min: 60, max: 180 }
+                }
+            ];
+            
+            // Looge logi sisu
+            let logContent = 'PUIDU ANALÜÜSI LOGI\n';
+            logContent += '===================\n';
+            logContent += `Analüüsi aeg: ${new Date().toLocaleString('et-EE')}\n\n`;
+            
+            // Määra analüüsitavate puude arv
+            const treeCount = capturedImage ? 3 : Math.min(5, uploadInput.files.length);
+            
+            // Genereeri tulemused iga puu kohta
+            for (let i = 0; i < treeCount; i++) {
+                const randomSpecies = treeSpecies[Math.floor(Math.random() * treeSpecies.length)];
+                const quality = randomSpecies.possibleQualities[Math.floor(Math.random() * randomSpecies.possibleQualities.length)];
+                
+                // Genereeri juhuslikud kahjustused
+                const damageCount = Math.floor(Math.random() * 3) + 1;
+                const damages = [];
+                for (let j = 0; j < damageCount; j++) {
+                    const damage = randomSpecies.commonDamages[Math.floor(Math.random() * randomSpecies.commonDamages.length)];
+                    if (!damages.includes(damage)) {
+                        damages.push(damage);
+                    }
+                }
+                
+                // Genereeri mõõtmed
+                const diameter = (Math.random() * 40 + 10).toFixed(1); // 10-50 cm
+                const length = (Math.random() * 4 + 2).toFixed(1); // 2-6 m
+                
+                // Arvuta väärtus
+                const baseValue = randomSpecies.valueRange.min + Math.random() * (randomSpecies.valueRange.max - randomSpecies.valueRange.min);
+                const qualityMultiplier = 
+                    quality === 'A' ? 1.2 :
+                    quality === 'B' ? 1.0 :
+                    quality === 'C' ? 0.8 :
+                    quality === 'D' ? 0.6 :
+                    quality === 'vineeripakk' ? 1.4 :
+                    quality === 'spoonipakk' ? 1.6 :
+                    quality === 'saepakk' ? 1.1 :
+                    quality === 'paberipuit' ? 0.5 : 0.3;
+                
+                const damageMultiplier = 1 - (damages.length * 0.1);
+                const volume = Math.PI * Math.pow(diameter/200, 2) * length;
+                const value = (baseValue * qualityMultiplier * damageMultiplier * volume).toFixed(2);
+                
+                // Loo puu tulemus HTML-is
+                const treeResult = document.createElement('div');
+                treeResult.className = 'tree-result';
+                treeResult.innerHTML = `
+                    <div class="tree-header">
+                        <span class="tree-species">${randomSpecies.name} (${randomSpecies.type})</span>
+                        <span class="tree-quality quality-${quality}">${quality}</span>
+                    </div>
+                    <div class="tree-details">
+                        <p><strong>Sortiment:</strong> ${getSortimentName(quality)}</p>
+                        <p><strong>Mõõtmed:</strong> Ø ${diameter} cm, pikkus ${length} m</p>
+                        <p><strong>Maht:</strong> ${volume.toFixed(3)} m³</p>
+                    </div>
+                    <div class="tree-damages">
+                        <strong>Kahjustused:</strong>
+                        ${damages.map(damage => `<span class="damage-tag">${damage}</span>`).join('')}
+                    </div>
+                    <div class="tree-value">
+                        <strong>Hinnanguline väärtus:</strong> ${value} €
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(treeResult);
+                
+                // Lisa logi faili
+                logContent += `PUU ${i+1}:\n`;
+                logContent += `  Liik: ${randomSpecies.name}\n`;
+                logContent += `  Tüüp: ${randomSpecies.type}\n`;
+                logContent += `  Kvaliteet: ${quality}\n`;
+                logContent += `  Sortiment: ${getSortimentName(quality)}\n`;
+                logContent += `  Läbimõõt: ${diameter} cm\n`;
+                logContent += `  Pikkus: ${length} m\n`;
+                logContent += `  Maht: ${volume.toFixed(3)} m³\n`;
+                logContent += `  Kahjustused: ${damages.join(', ')}\n`;
+                logContent += `  Hinnanguline väärtus: ${value} €\n\n`;
+            }
+            
+            // Lisa logi faili kokkuvõte
+            logContent += 'KOKKUVÕTE:\n';
+            logContent += `Analüüsitud puid: ${treeCount}\n`;
+            
+            // Kuva logi sisu
+            logsContent.textContent = logContent;
+        }
+        
+        // Abifunktsioon sortimendi nime saamiseks
+        function getSortimentName(quality) {
+            switch(quality) {
+                case 'A': return 'Kvaliteetne saepalk (A)';
+                case 'B': return 'Hea saepalk (B)';
+                case 'C': return 'Keskmine saepalk (C)';
+                case 'D': return 'Madalama kvaliteediga palk (D)';
+                case 'vineeripakk': return 'Vineeripakk';
+                case 'spoonipakk': return 'Spoonipakk';
+                case 'saepakk': return 'Saepakk';
+                case 'paberipuit': return 'Paberipuit';
+                case 'küttepuit': return 'Küttepuit';
+                default: return 'Määramata';
+            }
+        }
+    </script>
 </body>
 </html>
