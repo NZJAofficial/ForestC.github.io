@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puidu Tuvastamine ja Analüüs</title>
+    <title>Liikluskaamera süsteem</title>
     <style>
         :root {
-            --primary-color: #2e7d32;
-            --secondary-color: #4caf50;
-            --accent-color: #8bc34a;
-            --light-color: #e8f5e9;
-            --dark-color: #1b5e20;
+            --primary-color: #1a237e;
+            --secondary-color: #303f9f;
+            --accent-color: #3f51b5;
+            --warning-color: #ff5722;
+            --success-color: #4caf50;
+            --light-color: #e8eaf6;
+            --dark-color: #0d1533;
             --text-color: #333;
-            --error-color: #d32f2f;
         }
         
         * {
@@ -98,64 +99,61 @@
             }
         }
         
-        .input-section, .results-section {
+        .camera-section, .data-section {
             background-color: white;
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        .input-section h2, .results-section h2 {
+        .camera-section h2, .data-section h2 {
             color: var(--primary-color);
             margin-bottom: 1rem;
         }
         
-        .input-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .input-method {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .input-method:hover {
-            border-color: var(--accent-color);
-            background-color: var(--light-color);
-        }
-        
-        .input-method.active {
-            border-color: var(--primary-color);
-            background-color: var(--light-color);
-        }
-        
-        .camera-container, .upload-container {
-            display: none;
-            margin-top: 1rem;
-        }
-        
-        .camera-container.active, .upload-container.active {
-            display: block;
-        }
-        
-        #camera-preview {
+        .camera-container {
+            position: relative;
             width: 100%;
-            max-width: 500px;
             height: 300px;
             background-color: #eee;
             border-radius: 8px;
             margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        #camera-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .detection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .detection-box {
+            position: absolute;
+            border: 2px solid var(--warning-color);
+            background-color: rgba(255, 87, 34, 0.2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
         }
         
         .camera-controls {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
         
         button {
@@ -180,100 +178,96 @@
             background-color: #616161;
         }
         
-        #upload-input {
+        button.warning {
+            background-color: var(--warning-color);
+        }
+        
+        button.warning:hover {
+            background-color: #e64a19;
+        }
+        
+        .speed-limit-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             margin-bottom: 1rem;
         }
         
-        #analyze-btn {
-            width: 100%;
-            padding: 0.75rem;
-            font-size: 1.1rem;
-            margin-top: 1rem;
-        }
-        
-        .results-container {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        
-        .tree-result {
+        .speed-limit-controls input {
+            padding: 0.5rem;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            border-radius: 4px;
+            width: 80px;
         }
         
-        .tree-header {
+        .detected-objects {
+            margin-top: 1.5rem;
+        }
+        
+        .object-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+        
+        .object-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
         }
         
-        .tree-species {
+        .object-item:last-child {
+            border-bottom: none;
+        }
+        
+        .object-speed {
             font-weight: bold;
+        }
+        
+        .speed-over {
+            color: var(--warning-color);
+        }
+        
+        .data-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .data-card {
+            background-color: var(--light-color);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .data-card h3 {
             color: var(--primary-color);
-        }
-        
-        .tree-quality {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-        
-        .quality-A {
-            background-color: #4caf50;
-            color: white;
-        }
-        
-        .quality-B {
-            background-color: #8bc34a;
-            color: white;
-        }
-        
-        .quality-C {
-            background-color: #ffc107;
-            color: black;
-        }
-        
-        .quality-D {
-            background-color: #ff9800;
-            color: white;
-        }
-        
-        .quality-paper {
-            background-color: #2196f3;
-            color: white;
-        }
-        
-        .quality-firewood {
-            background-color: #795548;
-            color: white;
-        }
-        
-        .tree-details {
             margin-bottom: 0.5rem;
         }
         
-        .tree-damages {
-            margin-bottom: 0.5rem;
-        }
-        
-        .damage-tag {
-            display: inline-block;
-            background-color: #ffebee;
-            color: var(--error-color);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .tree-value {
+        .data-value {
+            font-size: 1.5rem;
             font-weight: bold;
             color: var(--dark-color);
+        }
+        
+        .speed-limit-sign {
+            width: 80px;
+            height: 80px;
+            background-color: white;
+            border: 5px solid red;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: red;
         }
         
         .logs-section {
@@ -303,195 +297,240 @@
             padding: 1.5rem 0;
             margin-top: 2rem;
         }
+        
+        .alert {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .alert.warning {
+            background-color: rgba(255, 87, 34, 0.2);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>Puidu Tuvastamine ja Analüüs</h1>
-            <p>Tuvasta puuliike, sorteeri ja analüüsi kahjustusi kaamera abil</p>
+            <h1>Liikluskaamera süsteem</h1>
+            <p>Tuvastab liikuvad objektid, mõõdab kiirust ja jälgib kiiruspiiranguid</p>
         </div>
     </header>
     
     <div class="container">
         <section class="app-description">
-            <h2>Tere tulemast puidu tuvastamise ja analüüsi rakendusse!</h2>
-            <p>See rakendus võimaldab teil tuvastada puuliike, nende kvaliteeti ja kahjustusi läbi kaamera või piltide üleslaadimise. Saate hinnata puidu väärtust ja genereerida detailse logi faili kõigist tuvastatud puudest.</p>
+            <h2>Tere tulemast liikluskaamera süsteemi!</h2>
+            <p>See süsteem jälgib liiklust, tuvastab liikuvad sõidukid, mõõdab nende kiirust ja võrdleb seda kehtestatud kiiruspiiranguga. Süsteem salvestab kõik andmed ja võimaldab neid hiljem analüüsida.</p>
         </section>
         
         <section class="features-grid">
             <div class="feature-card">
-                <i>🌳</i>
-                <h3>Puiduliikide tuvastamine</h3>
-                <p>Tuvastab okas- ja lehtpuuliike nagu kuusk, mänd, kask, haab jne.</p>
+                <i>🚗</i>
+                <h3>Objekti tuvastamine</h3>
+                <p>Tuvastab liikuvad sõidukid teel ja märgistab need kaadris</p>
             </div>
             <div class="feature-card">
                 <i>📊</i>
-                <h3>Sortimentide määramine</h3>
-                <p>Määrab sobivaima sortimendi (saepalk, vineeripakk, paberipuit jne).</p>
+                <h3>Kiiruse mõõtmine</h3>
+                <p>Mõõdab iga sõiduki kiiruse tegelikult km/h</p>
             </div>
             <div class="feature-card">
-                <i>🔍</i>
-                <h3>Kahjustuste analüüs</h3>
-                <p>Tuvastab köverused, mädanikud, mõlu, rebendid ja muud rikked.</p>
+                <i>🚧</i>
+                <h3>Kiiruspiirangud</h3>
+                <p>Jälgib kiiruspiiranguid ja märgistab ületajad</p>
             </div>
             <div class="feature-card">
-                <i>💰</i>
-                <h3>Väärtuse hindamine</h3>
-                <p>Annab umbkaudse maksumushinnangu vastavalt kvaliteedile ja sortimendile.</p>
+                <i>📝</i>
+                <h3>Andmete salvestamine</h3>
+                <p>Salvestab kõik liiklusandmed logifaili hilisemaks analüüsiks</p>
             </div>
         </section>
         
+        <div class="alert warning" id="speed-alert">
+            <strong>Hoiatus!</strong> Tuvastati kiiruspiirangu ületaja.
+        </div>
+        
         <div class="main-content">
-            <section class="input-section">
-                <h2>Puidu analüüs</h2>
-                <div class="input-methods">
-                    <div class="input-method active" id="camera-method">
-                        <h3>Kaamera</h3>
-                        <p>Kasuta oma kaamerat reaalajas piltide tegemiseks</p>
-                    </div>
-                    <div class="input-method" id="upload-method">
-                        <h3>Pildi üleslaadimine</h3>
-                        <p>Laadi üles olemasolevad pildid puidust</p>
-                    </div>
+            <section class="camera-section">
+                <h2>Kaamera vaade</h2>
+                
+                <div class="camera-container">
+                    <video id="camera-preview" autoplay muted></video>
+                    <div class="detection-overlay" id="detection-overlay"></div>
                 </div>
                 
-                <div class="camera-container active" id="camera-container">
-                    <div id="camera-preview"></div>
-                    <div class="camera-controls">
-                        <button id="start-camera">Käivita kaamera</button>
-                        <button id="capture-btn" disabled>Pildista</button>
-                        <button id="retake-btn" disabled class="secondary">Tee uus pilt</button>
+                <div class="camera-controls">
+                    <button id="start-camera">Käivita kaamera</button>
+                    <button id="start-detection" disabled>Alusta tuvastamist</button>
+                    <button id="stop-detection" disabled class="secondary">Peata tuvastamine</button>
+                    <button id="simulate-traffic" class="secondary">Simuleeri liiklust</button>
+                </div>
+                
+                <div class="speed-limit-controls">
+                    <label for="speed-limit-input">Kiiruspiirang (km/h):</label>
+                    <input type="number" id="speed-limit-input" value="50" min="20" max="120">
+                    <button id="set-speed-limit">Määra piirang</button>
+                </div>
+                
+                <div class="detected-objects">
+                    <h3>Tuvastatud sõidukid</h3>
+                    <div class="object-list" id="object-list">
+                        <p>Sõidukeid ei ole tuvastatud</p>
                     </div>
                 </div>
-                
-                <div class="upload-container" id="upload-container">
-                    <input type="file" id="upload-input" accept="image/*" multiple>
-                    <p>Valige üks või mitu pilti puidust analüüsiks</p>
-                </div>
-                
-                <button id="analyze-btn" disabled>Analüüsi puit</button>
             </section>
             
-            <section class="results-section">
-                <h2>Tulemused</h2>
-                <div class="results-container" id="results-container">
-                    <p>Tulemused kuvatakse siin pärast analüüsi.</p>
+            <section class="data-section">
+                <h2>Liiklusandmed</h2>
+                
+                <div class="data-display">
+                    <div class="data-card">
+                        <h3>Kehtiv kiiruspiirang</h3>
+                        <div class="speed-limit-sign">
+                            <span id="current-speed-limit">50</span>
+                        </div>
+                        <p>km/h</p>
+                    </div>
+                    
+                    <div class="data-card">
+                        <h3>Tuvastatud sõidukeid</h3>
+                        <div class="data-value" id="detected-count">0</div>
+                        <p>sõidukit</p>
+                    </div>
+                    
+                    <div class="data-card">
+                        <h3>Keskmine kiirus</h3>
+                        <div class="data-value" id="average-speed">0</div>
+                        <p>km/h</p>
+                    </div>
+                    
+                    <div class="data-card">
+                        <h3>Kiiruseületajaid</h3>
+                        <div class="data-value" id="speed-violations">0</div>
+                        <p>sõidukit</p>
+                    </div>
+                </div>
+                
+                <div class="logs-section">
+                    <h2>Liikluslogi</h2>
+                    <div class="logs-controls">
+                        <p>Kõikide tuvastatud sõidukite andmed</p>
+                        <button id="download-logs">Laadi logi alla</button>
+                    </div>
+                    <div id="logs-content">
+                        Logi sisu kuvatakse siin tuvastamise ajal.
+                    </div>
                 </div>
             </section>
         </div>
-        
-        <section class="logs-section">
-            <h2>Logi fail</h2>
-            <div class="logs-controls">
-                <p>Kõikide tuvastatud puude koondandmed</p>
-                <button id="download-logs">Laadi logi alla</button>
-            </div>
-            <div id="logs-content">
-                Logi sisu kuvatakse siin pärast analüüsi.
-            </div>
-        </section>
     </div>
     
     <footer>
         <div class="container">
-            <p>Puidu Tuvastamise ja Analüüsi Rakendus</p>
-            <p>Kasutab AI-tehnoloogiat puuliikide, sortimentide ja kahjustuste tuvastamiseks</p>
+            <p>Liikluskaamera süsteem | Tuvastab liikuvad objektid ja kiiruseületajad</p>
         </div>
     </footer>
 
     <script>
         // Elementide valik
-        const cameraMethod = document.getElementById('camera-method');
-        const uploadMethod = document.getElementById('upload-method');
-        const cameraContainer = document.getElementById('camera-container');
-        const uploadContainer = document.getElementById('upload-container');
         const startCameraBtn = document.getElementById('start-camera');
-        const captureBtn = document.getElementById('capture-btn');
-        const retakeBtn = document.getElementById('retake-btn');
-        const uploadInput = document.getElementById('upload-input');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const resultsContainer = document.getElementById('results-container');
+        const startDetectionBtn = document.getElementById('start-detection');
+        const stopDetectionBtn = document.getElementById('stop-detection');
+        const simulateTrafficBtn = document.getElementById('simulate-traffic');
+        const speedLimitInput = document.getElementById('speed-limit-input');
+        const setSpeedLimitBtn = document.getElementById('set-speed-limit');
+        const cameraPreview = document.getElementById('camera-preview');
+        const detectionOverlay = document.getElementById('detection-overlay');
+        const objectList = document.getElementById('object-list');
+        const currentSpeedLimit = document.getElementById('current-speed-limit');
+        const detectedCount = document.getElementById('detected-count');
+        const averageSpeed = document.getElementById('average-speed');
+        const speedViolations = document.getElementById('speed-violations');
         const logsContent = document.getElementById('logs-content');
         const downloadLogsBtn = document.getElementById('download-logs');
+        const speedAlert = document.getElementById('speed-alert');
         
-        // Kaamera muutujad
+        // Kaamera ja tuvastamise muutujad
         let stream = null;
-        let capturedImage = null;
+        let detectionActive = false;
+        let detectionInterval = null;
+        let speedLimit = 50;
         
-        // Sisendmeetodi vahetamine
-        cameraMethod.addEventListener('click', () => {
-            cameraMethod.classList.add('active');
-            uploadMethod.classList.remove('active');
-            cameraContainer.classList.add('active');
-            uploadContainer.classList.remove('active');
-            analyzeBtn.disabled = !capturedImage && uploadInput.files.length === 0;
-        });
+        // Andmed
+        let detectedObjects = [];
+        let logData = '';
         
-        uploadMethod.addEventListener('click', () => {
-            uploadMethod.classList.add('active');
-            cameraMethod.classList.remove('active');
-            uploadContainer.classList.add('active');
-            cameraContainer.classList.remove('active');
-            analyzeBtn.disabled = !capturedImage && uploadInput.files.length === 0;
-        });
-        
-        // Kaamera funktsionaalsus
+        // Kaamera käivitamine
         startCameraBtn.addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const preview = document.getElementById('camera-preview');
-                preview.srcObject = stream;
-                captureBtn.disabled = false;
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                cameraPreview.srcObject = stream;
+                startDetectionBtn.disabled = false;
                 startCameraBtn.disabled = true;
+                
+                // Lisa logi
+                addToLog('Kaamera käivitatud');
             } catch (error) {
                 console.error('Kaamera käivitamine ebaõnnestus:', error);
                 alert('Kaamera käivitamine ebaõnnestus. Palun kontrollige kaamera õiguseid.');
             }
         });
         
-        captureBtn.addEventListener('click', () => {
-            const preview = document.getElementById('camera-preview');
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+        // Tuvastamise käivitamine
+        startDetectionBtn.addEventListener('click', () => {
+            detectionActive = true;
+            startDetectionBtn.disabled = true;
+            stopDetectionBtn.disabled = false;
             
-            canvas.width = preview.videoWidth;
-            canvas.height = preview.videoHeight;
-            context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+            // Käivita tuvastamine
+            startObjectDetection();
             
-            capturedImage = canvas.toDataURL('image/jpeg');
-            preview.srcObject = null;
-            stream.getTracks().forEach(track => track.stop());
-            
-            // Näita pilti eelvaates
-            preview.style.backgroundImage = `url(${capturedImage})`;
-            preview.style.backgroundSize = 'cover';
-            preview.style.backgroundPosition = 'center';
-            
-            captureBtn.disabled = true;
-            retakeBtn.disabled = false;
-            analyzeBtn.disabled = false;
+            // Lisa logi
+            addToLog('Objekti tuvastamine käivitatud');
         });
         
-        retakeBtn.addEventListener('click', () => {
-            const preview = document.getElementById('camera-preview');
-            preview.style.backgroundImage = 'none';
-            capturedImage = null;
-            retakeBtn.disabled = true;
-            analyzeBtn.disabled = true;
-            startCameraBtn.disabled = false;
-            startCameraBtn.click();
+        // Tuvastamise peatamine
+        stopDetectionBtn.addEventListener('click', () => {
+            detectionActive = false;
+            startDetectionBtn.disabled = false;
+            stopDetectionBtn.disabled = true;
+            
+            // Peata tuvastamine
+            clearInterval(detectionInterval);
+            detectionOverlay.innerHTML = '';
+            
+            // Lisa logi
+            addToLog('Objekti tuvastamine peatatud');
         });
         
-        // Üleslaadimise funktsionaalsus
-        uploadInput.addEventListener('change', () => {
-            analyzeBtn.disabled = uploadInput.files.length === 0;
+        // Kiiruspiirangu määramine
+        setSpeedLimitBtn.addEventListener('click', () => {
+            const newLimit = parseInt(speedLimitInput.value);
+            if (newLimit >= 20 && newLimit <= 120) {
+                speedLimit = newLimit;
+                currentSpeedLimit.textContent = speedLimit;
+                
+                // Lisa logi
+                addToLog(`Kiiruspiirang muudetud: ${speedLimit} km/h`);
+            } else {
+                alert('Palun sisesta kehtiv kiiruspiirang (20-120 km/h)');
+            }
         });
         
-        // Analüüsi nupp
-        analyzeBtn.addEventListener('click', () => {
-            // Simuleerime analüüsi tulemusi
-            simulateAnalysis();
+        // Liikluse simuleerimine
+        simulateTrafficBtn.addEventListener('click', () => {
+            if (!detectionActive) {
+                alert('Palun käivita esmalt objekti tuvastamine!');
+                return;
+            }
+            
+            // Lisa mõned sõidukid simuleerimiseks
+            simulateTraffic();
         });
         
         // Logi allalaadimine
@@ -501,161 +540,186 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'puidu_analyys_logi.txt';
+            a.download = 'liikluslogi.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         });
         
-        // Simuleeritud analüüsifunktsioon
-        function simulateAnalysis() {
-            // Tühjenda eelmised tulemused
-            resultsContainer.innerHTML = '';
-            logsContent.textContent = '';
-            
-            // Puuliigid ja nende omadused
-            const treeSpecies = [
-                {
-                    name: 'Kuusk',
-                    type: 'okaspuu',
-                    possibleQualities: ['A', 'B', 'C', 'D', 'paberipuit', 'küttepuit'],
-                    commonDamages: ['lihtköverus', 'liitköverus', 'mõlu', 'sagartütakus', 'südamemädanik'],
-                    valueRange: { min: 40, max: 120 }
-                },
-                {
-                    name: 'Mänd',
-                    type: 'okaspuu',
-                    possibleQualities: ['A', 'B', 'C', 'D', 'paberipuit', 'küttepuit'],
-                    commonDamages: ['lihtköverus', 'mõlu', 'tulioks', 'südamemädanik'],
-                    valueRange: { min: 35, max: 100 }
-                },
-                {
-                    name: 'Kask',
-                    type: 'lehtpuu',
-                    possibleQualities: ['vineeripakk', 'spoonipakk', 'saepakk', 'paberipuit', 'küttepuit'],
-                    commonDamages: ['lihtköverus', 'oksad', 'pehmemädanik', 'värvimuutus'],
-                    valueRange: { min: 50, max: 150 }
-                },
-                {
-                    name: 'Haab',
-                    type: 'lehtpuu',
-                    possibleQualities: ['saepakk', 'paberipuit', 'küttepuit'],
-                    commonDamages: ['lihtköverus', 'oksad', 'pehmemädanik'],
-                    valueRange: { min: 30, max: 80 }
-                },
-                {
-                    name: 'Saar',
-                    type: 'lehtpuu',
-                    possibleQualities: ['saepakk', 'paberipuit', 'küttepuit'],
-                    commonDamages: ['lihtköverus', 'oksad', 'südamemädanik'],
-                    valueRange: { min: 60, max: 180 }
-                }
-            ];
-            
-            // Looge logi sisu
-            let logContent = 'PUIDU ANALÜÜSI LOGI\n';
-            logContent += '===================\n';
-            logContent += `Analüüsi aeg: ${new Date().toLocaleString('et-EE')}\n\n`;
-            
-            // Määra analüüsitavate puude arv
-            const treeCount = capturedImage ? 3 : Math.min(5, uploadInput.files.length);
-            
-            // Genereeri tulemused iga puu kohta
-            for (let i = 0; i < treeCount; i++) {
-                const randomSpecies = treeSpecies[Math.floor(Math.random() * treeSpecies.length)];
-                const quality = randomSpecies.possibleQualities[Math.floor(Math.random() * randomSpecies.possibleQualities.length)];
+        // Objekti tuvastamise funktsioon
+        function startObjectDetection() {
+            detectionInterval = setInterval(() => {
+                if (!detectionActive) return;
                 
-                // Genereeri juhuslikud kahjustused
-                const damageCount = Math.floor(Math.random() * 3) + 1;
-                const damages = [];
-                for (let j = 0; j < damageCount; j++) {
-                    const damage = randomSpecies.commonDamages[Math.floor(Math.random() * randomSpecies.commonDamages.length)];
-                    if (!damages.includes(damage)) {
-                        damages.push(damage);
-                    }
+                // Juhuslikult lisa uusi objekte (simulatsioon)
+                if (Math.random() < 0.3) {
+                    addRandomObject();
                 }
                 
-                // Genereeri mõõtmed
-                const diameter = (Math.random() * 40 + 10).toFixed(1); // 10-50 cm
-                const length = (Math.random() * 4 + 2).toFixed(1); // 2-6 m
+                // Uuenda olemasolevaid objekte
+                updateObjects();
                 
-                // Arvuta väärtus
-                const baseValue = randomSpecies.valueRange.min + Math.random() * (randomSpecies.valueRange.max - randomSpecies.valueRange.min);
-                const qualityMultiplier = 
-                    quality === 'A' ? 1.2 :
-                    quality === 'B' ? 1.0 :
-                    quality === 'C' ? 0.8 :
-                    quality === 'D' ? 0.6 :
-                    quality === 'vineeripakk' ? 1.4 :
-                    quality === 'spoonipakk' ? 1.6 :
-                    quality === 'saepakk' ? 1.1 :
-                    quality === 'paberipuit' ? 0.5 : 0.3;
+                // Uuenda kasutajaliidest
+                updateUI();
                 
-                const damageMultiplier = 1 - (damages.length * 0.1);
-                const volume = Math.PI * Math.pow(diameter/200, 2) * length;
-                const value = (baseValue * qualityMultiplier * damageMultiplier * volume).toFixed(2);
-                
-                // Loo puu tulemus HTML-is
-                const treeResult = document.createElement('div');
-                treeResult.className = 'tree-result';
-                treeResult.innerHTML = `
-                    <div class="tree-header">
-                        <span class="tree-species">${randomSpecies.name} (${randomSpecies.type})</span>
-                        <span class="tree-quality quality-${quality}">${quality}</span>
-                    </div>
-                    <div class="tree-details">
-                        <p><strong>Sortiment:</strong> ${getSortimentName(quality)}</p>
-                        <p><strong>Mõõtmed:</strong> Ø ${diameter} cm, pikkus ${length} m</p>
-                        <p><strong>Maht:</strong> ${volume.toFixed(3)} m³</p>
-                    </div>
-                    <div class="tree-damages">
-                        <strong>Kahjustused:</strong>
-                        ${damages.map(damage => `<span class="damage-tag">${damage}</span>`).join('')}
-                    </div>
-                    <div class="tree-value">
-                        <strong>Hinnanguline väärtus:</strong> ${value} €
-                    </div>
-                `;
-                
-                resultsContainer.appendChild(treeResult);
-                
-                // Lisa logi faili
-                logContent += `PUU ${i+1}:\n`;
-                logContent += `  Liik: ${randomSpecies.name}\n`;
-                logContent += `  Tüüp: ${randomSpecies.type}\n`;
-                logContent += `  Kvaliteet: ${quality}\n`;
-                logContent += `  Sortiment: ${getSortimentName(quality)}\n`;
-                logContent += `  Läbimõõt: ${diameter} cm\n`;
-                logContent += `  Pikkus: ${length} m\n`;
-                logContent += `  Maht: ${volume.toFixed(3)} m³\n`;
-                logContent += `  Kahjustused: ${damages.join(', ')}\n`;
-                logContent += `  Hinnanguline väärtus: ${value} €\n\n`;
-            }
-            
-            // Lisa logi faili kokkuvõte
-            logContent += 'KOKKUVÕTE:\n';
-            logContent += `Analüüsitud puid: ${treeCount}\n`;
-            
-            // Kuva logi sisu
-            logsContent.textContent = logContent;
+            }, 1000);
         }
         
-        // Abifunktsioon sortimendi nime saamiseks
-        function getSortimentName(quality) {
-            switch(quality) {
-                case 'A': return 'Kvaliteetne saepalk (A)';
-                case 'B': return 'Hea saepalk (B)';
-                case 'C': return 'Keskmine saepalk (C)';
-                case 'D': return 'Madalama kvaliteediga palk (D)';
-                case 'vineeripakk': return 'Vineeripakk';
-                case 'spoonipakk': return 'Spoonipakk';
-                case 'saepakk': return 'Saepakk';
-                case 'paberipuit': return 'Paberipuit';
-                case 'küttepuit': return 'Küttepuit';
-                default: return 'Määramata';
+        // Juhusliku objekti lisamine
+        function addRandomObject() {
+            const objectTypes = ['Auto', 'Veoauto', 'Buss', 'Mootorratas'];
+            const type = objectTypes[Math.floor(Math.random() * objectTypes.length)];
+            
+            // Genereeri juhuslik kiirus (enamasti piirangu lähedal, mõnikord üle)
+            let speed;
+            if (Math.random() < 0.8) {
+                // Enamik sõidukeid sõidab piirangu lähedal
+                speed = speedLimit + Math.floor(Math.random() * 20) - 10;
+            } else {
+                // Mõned ületavad piirangut oluliselt
+                speed = speedLimit + Math.floor(Math.random() * 30) + 10;
+            }
+            
+            // Veendu, et kiirus ei oleks liiga madal
+            speed = Math.max(30, speed);
+            
+            const object = {
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                type: type,
+                speed: speed,
+                x: Math.floor(Math.random() * 80) + 10, // % laiusest
+                y: Math.floor(Math.random() * 80) + 10, // % kõrgusest
+                width: Math.floor(Math.random() * 15) + 10, // % laiusest
+                height: Math.floor(Math.random() * 10) + 5, // % kõrgusest
+                timestamp: new Date()
+            };
+            
+            detectedObjects.push(object);
+            
+            // Lisa logi
+            addToLog(`Tuvastatud: ${object.type}, kiirus: ${object.speed} km/h`);
+            
+            // Näita hoiatusi kiiruseületajate puhul
+            if (object.speed > speedLimit) {
+                showSpeedAlert(object);
             }
         }
+        
+        // Objektide uuendamine
+        function updateObjects() {
+            // Eemalda vananenud objektid (vanemad kui 10 sekundit)
+            const now = new Date();
+            detectedObjects = detectedObjects.filter(obj => {
+                return (now - obj.timestamp) < 10000; // 10 sekundit
+            });
+            
+            // Liiguta objekte (simulatsioon)
+            detectedObjects.forEach(obj => {
+                // Liiguta objekti horisontaalselt
+                obj.x += Math.floor(Math.random() * 10) - 5;
+                
+                // Veendu, et objekt jääb kaadrisse
+                if (obj.x < 5) obj.x = 5;
+                if (obj.x > 95) obj.x = 95;
+            });
+        }
+        
+        // Kasutajaliidese uuendamine
+        function updateUI() {
+            // Uuenda tuvastatud objektide loendit
+            objectList.innerHTML = '';
+            
+            if (detectedObjects.length === 0) {
+                objectList.innerHTML = '<p>Sõidukeid ei ole tuvastatud</p>';
+            } else {
+                detectedObjects.forEach(obj => {
+                    const item = document.createElement('div');
+                    item.className = 'object-item';
+                    item.innerHTML = `
+                        <span>${obj.type}</span>
+                        <span class="object-speed ${obj.speed > speedLimit ? 'speed-over' : ''}">
+                            ${obj.speed} km/h
+                        </span>
+                    `;
+                    objectList.appendChild(item);
+                });
+            }
+            
+            // Uuenda andmeid
+            detectedCount.textContent = detectedObjects.length;
+            
+            // Arvuta keskmine kiirus
+            const avgSpeed = detectedObjects.length > 0 
+                ? Math.round(detectedObjects.reduce((sum, obj) => sum + obj.speed, 0) / detectedObjects.length)
+                : 0;
+            averageSpeed.textContent = avgSpeed;
+            
+            // Arvuta kiiruseületajate arv
+            const violations = detectedObjects.filter(obj => obj.speed > speedLimit).length;
+            speedViolations.textContent = violations;
+            
+            // Uuenda tuvastusülekatet
+            updateDetectionOverlay();
+        }
+        
+        // Tuvastusülekate uuendamine
+        function updateDetectionOverlay() {
+            detectionOverlay.innerHTML = '';
+            
+            detectedObjects.forEach(obj => {
+                const box = document.createElement('div');
+                box.className = 'detection-box';
+                box.style.left = `${obj.x}%`;
+                box.style.top = `${obj.y}%`;
+                box.style.width = `${obj.width}%`;
+                box.style.height = `${obj.height}%`;
+                box.textContent = `${obj.type} ${obj.speed}km/h`;
+                
+                // Muuda värvi kiiruseületajate puhul
+                if (obj.speed > speedLimit) {
+                    box.style.borderColor = 'red';
+                    box.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+                }
+                
+                detectionOverlay.appendChild(box);
+            });
+        }
+        
+        // Kiiruseületuse hoiatus
+        function showSpeedAlert(object) {
+            speedAlert.style.display = 'block';
+            speedAlert.innerHTML = `<strong>Hoiatus!</strong> Tuvastati kiiruspiirangu ületaja: ${object.type} kiirusega ${object.speed} km/h (piirang: ${speedLimit} km/h)`;
+            
+            // Peida hoiatus 5 sekundi pärast
+            setTimeout(() => {
+                speedAlert.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Liikluse simuleerimine
+        function simulateTraffic() {
+            // Lisa mitu objekti korraga
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    addRandomObject();
+                }, i * 1000);
+            }
+            
+            addToLog('Liikluse simuleerimine käivitatud');
+        }
+        
+        // Logi lisamine
+        function addToLog(message) {
+            const timestamp = new Date().toLocaleString('et-EE');
+            logData += `[${timestamp}] ${message}\n`;
+            logsContent.textContent = logData;
+            logsContent.scrollTop = logsContent.scrollHeight;
+        }
+        
+        // Algseadistus
+        currentSpeedLimit.textContent = speedLimit;
+        addToLog('Liikluskaamera süsteem käivitatud');
     </script>
 </body>
 </html>
