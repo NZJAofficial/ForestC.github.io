@@ -3,1309 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Bot Builder | Koodita Boti Looja</title>
+    <title>NutriPlan - Tark toitumiskava</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #5865F2;
-            --primary-dark: #4752C4;
-            --secondary: #57F287;
-            --dark: #2C2F33;
-            --darker: #23272A;
-            --light: #FFFFFF;
-            --gray: #99AAB5;
-            --danger: #ED4245;
-            --success: #57F287;
-            --warning: #FEE75C;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: var(--darker);
-            color: var(--light);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header */
-        header {
-            background-color: var(--dark);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--light);
-        }
-        
-        .logo i {
-            color: var(--primary);
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-        
-        .nav-links a {
-            color: var(--gray);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .nav-links a:hover {
-            color: var(--light);
-        }
-        
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .btn {
-            padding: 0.5rem 1.5rem;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: var(--light);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        .btn-secondary {
-            background-color: transparent;
-            color: var(--light);
-            border: 1px solid var(--gray);
-        }
-        
-        .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Hero Section */
-        .hero {
-            padding: 5rem 0;
-            text-align: center;
-            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
-        }
-        
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--gray);
-            max-width: 700px;
-            margin: 0 auto 2rem;
-        }
-        
-        .hero-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .btn-large {
-            padding: 0.8rem 2rem;
-            font-size: 1.1rem;
-        }
-        
-        /* Features Section */
-        .features {
-            padding: 5rem 0;
-            background-color: var(--dark);
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .section-title h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .section-title p {
-            color: var(--gray);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-        
-        .feature-card {
-            background-color: var(--darker);
-            border-radius: 8px;
-            padding: 2rem;
-            transition: transform 0.3s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .feature-icon {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-        
-        .feature-card h3 {
-            margin-bottom: 1rem;
-        }
-        
-        .feature-card p {
-            color: var(--gray);
-        }
-        
-        /* Dashboard Preview */
-        .dashboard-preview {
-            padding: 5rem 0;
-            background-color: var(--darker);
-        }
-        
-        .preview-container {
-            display: flex;
-            align-items: center;
-            gap: 3rem;
-        }
-        
-        .preview-content {
-            flex: 1;
-        }
-        
-        .preview-image {
-            flex: 1;
-            background-color: var(--dark);
-            border-radius: 8px;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .preview-image img {
-            max-width: 100%;
-            height: auto;
-        }
-        
-        /* Footer */
-        footer {
-            background-color: var(--dark);
-            padding: 3rem 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-        
-        .footer-column h3 {
-            margin-bottom: 1.5rem;
-            font-size: 1.2rem;
-        }
-        
-        .footer-links {
-            list-style: none;
-        }
-        
-        .footer-links li {
-            margin-bottom: 0.8rem;
-        }
-        
-        .footer-links a {
-            color: var(--gray);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
-            color: var(--light);
-        }
-        
-        .copyright {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--gray);
-        }
-        
-        /* Dashboard Styles */
-        .dashboard {
-            display: none;
-            min-height: 100vh;
-        }
-        
-        .dashboard-header {
-            background-color: var(--dark);
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .dashboard-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .dashboard-main {
-            display: flex;
-            min-height: calc(100vh - 80px);
-        }
-        
-        .sidebar {
-            width: 250px;
-            background-color: var(--dark);
-            padding: 2rem 0;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.8rem 1.5rem;
-            color: var(--gray);
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: rgba(88, 101, 242, 0.1);
-            color: var(--light);
-            border-left: 3px solid var(--primary);
-        }
-        
-        .dashboard-content {
-            flex: 1;
-            padding: 2rem;
-            background-color: var(--darker);
-        }
-        
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        
-        .commands-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .command-card {
-            background-color: var(--dark);
-            border-radius: 8px;
-            padding: 1.5rem;
-            transition: all 0.3s;
-        }
-        
-        .command-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .command-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .command-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background-color: var(--success);
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
-        .command-settings {
-            margin-top: 1rem;
-            display: none;
-        }
-        
-        .setting-item {
-            margin-bottom: 1rem;
-        }
-        
-        .setting-item label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        
-        .setting-item input, .setting-item select {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background-color: var(--darker);
-            color: var(--light);
-        }
-        
-        .server-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .server-card {
-            background-color: var(--dark);
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .server-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .server-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-            background-color: var(--darker);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-        }
-        
-        /* Login Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background-color: var(--dark);
-            border-radius: 8px;
-            padding: 2rem;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        
-        .modal h2 {
-            margin-bottom: 1rem;
-        }
-        
-        .modal p {
-            color: var(--gray);
-            margin-bottom: 2rem;
-        }
-        
-        .discord-login-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        
-        .discord-login-btn:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .preview-container {
-                flex-direction: column;
-            }
-            
-            .dashboard-main {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                padding: 1rem 0;
-            }
-            
-            .sidebar-menu {
-                display: flex;
-                overflow-x: auto;
-                padding: 0 1rem;
-            }
-            
-            .sidebar-menu li {
-                flex-shrink: 0;
-                margin-bottom: 0;
-            }
-            
-            .sidebar-menu a {
-                padding: 0.5rem 1rem;
-                border-radius: 4px;
-                border-left: none;
-            }
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-right: 15px;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-        }
-
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--success);
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Landing Page -->
-    <div id="landing-page">
-        <header>
-            <div class="container">
-                <nav class="navbar">
-                    <div class="logo">
-                        <i class="fab fa-discord"></i>
-                        <span>BotBuilder</span>
-                    </div>
-                    <div class="nav-links">
-                        <a href="#features">Funktsioonid</a>
-                        <a href="#preview">Demo</a>
-                        <a href="#pricing">Hinnad</a>
-                        <a href="#docs">Dokumentatsioon</a>
-                    </div>
-                    <div class="auth-buttons">
-                        <button class="btn btn-secondary" id="login-btn">Logi sisse</button>
-                        <button class="btn btn-primary" id="create-bot-btn">Loo bot</button>
-                    </div>
-                </nav>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-apple-alt"></i> NutriPlan
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Avaleht</a></li>
+                <li><a href="recipes.html">Retseptid</a></li>
+                <li><a href="mealplan.html">Toitumisplaan</a></li>
+                <li><a href="weight.html">Kaalu jälgimine</a></li>
+                <li><a href="tips.html">Näpunäited</a></li>
+                <li><a href="login.html" class="btn-login">Logi sisse</a></li>
+                <li><a href="register.html" class="btn-primary">Registreeru</a></li>
+            </ul>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <section class="hero">
-            <div class="container">
-                <h1>Loo oma Discord bot ilma koodi kirjutamata</h1>
-                <p>Meie bot builder võimaldab sul luua täisfunktsionaalse Discord boti mõne minutiga. Vali lihtsalt vajalikud funktsioonid ja meie süsteem teeb kõik töö sinu eest!</p>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Tark toitumiskava <span class="highlight">sinu eesmärkide jaoks</span></h1>
+                <p>Saada personaalne toitumisplaan 175 retseptiga, grammid arvutatud automaatselt sinu kalorivajaduse põhjal. Jälgi edusamme ja saavuta oma kaalueesmärk!</p>
                 <div class="hero-buttons">
-                    <button class="btn btn-primary btn-large" id="hero-create-bot">
-                        <i class="fas fa-robot"></i> Loo oma bot
-                    </button>
-                    <button class="btn btn-secondary btn-large">
-                        <i class="fas fa-play-circle"></i> Vaata demot
-                    </button>
+                    <a href="register.html" class="btn-primary btn-large">Alusta tasuta</a>
+                    <a href="#features" class="btn-secondary">Loe lähemalt</a>
                 </div>
             </div>
-        </section>
-
-        <section class="features" id="features">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Võimsad funktsioonid</h2>
-                    <p>Meie bot builder pakub kõiki populaarseimaid Discord boti funktsioone</p>
-                </div>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-music"></i>
-                        </div>
-                        <h3>Muusika süsteem</h3>
-                        <p>Mängi muusikat otse YouTube'ist, Spotify'st ja SoundCloud'ist. Täielik muusikamängija koos järjekorra süsteemiga.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3>Modereerimine</h3>
-                        <p>Automaatne modereerimine, räige sõnade filter, automaatne karistuste süsteem ja palju muud.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-comment-dots"></i>
-                        </div>
-                        <h3>AI Vestlus</h3>
-                        <p>Integreeri ChatGPT oma botiga, et pakkuda intelligentseid vestlusi ja vastuseid kasutajate küsimustele.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-ticket-alt"></i>
-                        </div>
-                        <h3>Piletisüsteem</h3>
-                        <p>Loo automaatsed piletikanalid kasutajatoe jaoks koos kategooriate ja personaliga.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-user-tag"></i>
-                        </div>
-                        <h3>Rollide süsteem</h3>
-                        <p>Reaktsioonide põhised rollid, automaatsed rollid ja palju muud rollide haldamise võimalusi.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3>XP ja Majandus</h3>
-                        <p>Kasutajate taseme süsteem, virtuaalne majandus, kauplused ja palju muud meelelahutuslikke funktsioone.</p>
-                    </div>
-                </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tervislik toit">
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="dashboard-preview" id="preview">
-            <div class="container">
-                <div class="preview-container">
-                    <div class="preview-content">
-                        <h2>Intuitiivne juhtpaneel</h2>
-                        <p>Meie lihtne ja võimas juhtpaneel võimaldab sul hõlpsalt seadistada kõiki oma boti funktsioone ilma tehniliste teadmisteta.</p>
-                        <ul>
-                            <li>Lülita funktsioone sisse/välja ühe klõpsuga</li>
-                            <li>Kohanda iga käsuga seotud seadeid</li>
-                            <li>Vaata reaalajas statistikat</li>
-                            <li>Halda oma bote mitmes serveris</li>
-                        </ul>
-                        <button class="btn btn-primary" style="margin-top: 1.5rem;">Proovi juhtpaneeli</button>
+    <!-- Features -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Miks valida NutriPlan?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
                     </div>
-                    <div class="preview-image">
-                        <div style="background: linear-gradient(135deg, #5865F2, #57F287); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                            Dashboard Preview
-                        </div>
-                    </div>
+                    <h3>Automaatne arvutus</h3>
+                    <p>Süsteem arvutab iga retsepti jaoks täpsed grammid sinu päevase kalorivajaduse põhjal.</p>
                 </div>
-            </div>
-        </section>
-
-        <footer>
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-column">
-                        <h3>BotBuilder</h3>
-                        <ul class="footer-links">
-                            <li><a href="#">Avaleht</a></li>
-                            <li><a href="#">Funktsioonid</a></li>
-                            <li><a href="#">Hinnad</a></li>
-                            <li><a href="#">Dokumentatsioon</a></li>
-                        </ul>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-utensils"></i>
                     </div>
-                    <div class="footer-column">
-                        <h3>Toetus</h3>
-                        <ul class="footer-links">
-                            <li><a href="#">KKK</a></li>
-                            <li><a href="#">Kontakt</a></li>
-                            <li><a href="#">Discordi server</a></li>
-                            <li><a href="#">Staatuse leht</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h3>Juriidiline</h3>
-                        <ul class="footer-links">
-                            <li><a href="#">Privaatsuspoliitika</a></li>
-                            <li><a href="#">Kasutajatingimused</a></li>
-                            <li><a href="#">Küpsiste poliitika</a></li>
-                        </ul>
-                    </div>
+                    <h3>175 retsepti</h3>
+                    <p>Lai valik toite: hommiku-, lõuna-, õhtusöögid ja snäkid. Kõik Eesti maitsele.</p>
                 </div>
-                <div class="copyright">
-                    <p>&copy; 2023 BotBuilder. Kõik õigused kaitstud.</p>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Edusammud</h3>
+                    <p>Jälgi kaalu muutusi graafikutel ja näe oma progressi reaalajas.</p>
                 </div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Dashboard (initially hidden) -->
-    <div id="dashboard" class="dashboard">
-        <div class="dashboard-header">
-            <div class="container">
-                <div class="dashboard-nav">
-                    <div class="logo">
-                        <i class="fab fa-discord"></i>
-                        <span>BotBuilder Dashboard</span>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
                     </div>
-                    <div style="display: flex; align-items: center;">
-                        <div class="user-info" id="user-info">
-                            <img class="user-avatar" id="user-avatar" src="" alt="User Avatar">
-                            <span id="username">Kasutaja</span>
-                            <div class="status-indicator"></div>
-                        </div>
-                        <button class="btn btn-secondary" id="back-to-home">
-                            <i class="fas fa-arrow-left"></i> Tagasi avalehele
-                        </button>
-                    </div>
+                    <h3>Alternatiivid</h3>
+                    <p>Gluteenivaba, laktoosivaba, taimetoitlikud alternatiivid iga retsepti jaoks.</p>
                 </div>
             </div>
         </div>
-        
-        <div class="dashboard-main">
-            <div class="sidebar">
-                <ul class="sidebar-menu">
-                    <li><a href="#" class="active" data-tab="overview"><i class="fas fa-home"></i> Ülevaade</a></li>
-                    <li><a href="#" data-tab="commands"><i class="fas fa-sliders-h"></i> Käsud</a></li>
-                    <li><a href="#" data-tab="settings"><i class="fas fa-cog"></i> Seaded</a></li>
-                    <li><a href="#" data-tab="stats"><i class="fas fa-chart-bar"></i> Statistika</a></li>
-                    <li><a href="#" data-tab="support"><i class="fas fa-headset"></i> Toetus</a></li>
-                    <li><a href="#" data-tab="premium"><i class="fas fa-crown"></i> Premium</a></li>
-                </ul>
-            </div>
-            
-            <div class="dashboard-content">
-                <div class="loading" id="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Laadin andmeid...</p>
-                </div>
+    </section>
 
-                <div id="overview-tab" class="tab-content">
-                    <div class="content-header">
-                        <h1>Minu botid</h1>
-                        <button class="btn btn-primary" id="add-bot-btn">
-                            <i class="fas fa-plus"></i> Lisa uus bot
-                        </button>
-                    </div>
-                    
-                    <div class="server-list" id="server-list">
-                        <!-- Serverid laetakse siia -->
-                    </div>
-                    
-                    <div style="margin-top: 3rem;">
-                        <h2>Populaarsed käsud</h2>
-                        <div class="commands-grid" style="margin-top: 1.5rem;" id="popular-commands">
-                            <!-- Populaarsed käsud laetakse siia -->
-                        </div>
-                    </div>
+    <!-- How it works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Kuidas see töötab?</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Registreeru</h3>
+                    <p>Sisesta oma andmed: kaal, pikkus, vanus, sugu ja aktiivsustase.</p>
                 </div>
-
-                <div id="commands-tab" class="tab-content" style="display: none;">
-                    <div class="content-header">
-                        <h1>Käsud</h1>
-                        <p>Lülita sisse/välja ja seadista oma boti käsud</p>
-                    </div>
-                    
-                    <div class="commands-grid" id="all-commands">
-                        <!-- Kõik käsud laetakse siia -->
-                    </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Saada kava</h3>
+                    <p>Süsteem arvutab sinu päevase kalorivajaduse ja koostab personaalse plaani.</p>
                 </div>
-
-                <div id="settings-tab" class="tab-content" style="display: none;">
-                    <div class="content-header">
-                        <h1>Seaded</h1>
-                        <p>Halda oma boti üldisi seadeid</p>
-                    </div>
-                    
-                    <div style="max-width: 600px;">
-                        <div class="setting-item">
-                            <label>Boti eesliide</label>
-                            <input type="text" id="bot-prefix" placeholder="!">
-                        </div>
-                        <div class="setting-item">
-                            <label>Vaikimisi keel</label>
-                            <select id="bot-language">
-                                <option value="et">Eesti</option>
-                                <option value="en">English</option>
-                                <option value="ru">Русский</option>
-                            </select>
-                        </div>
-                        <div class="setting-item">
-                            <label>Logimise tase</label>
-                            <select id="log-level">
-                                <option value="debug">Debug</option>
-                                <option value="info">Info</option>
-                                <option value="warn">Warning</option>
-                                <option value="error">Error</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" id="save-settings">Salvesta seaded</button>
-                    </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Vali retseptid</h3>
+                    <p>Vali endale meeldivad retseptid 175 valiku hulgast.</p>
                 </div>
-
-                <div id="stats-tab" class="tab-content" style="display: none;">
-                    <div class="content-header">
-                        <h1>Statistika</h1>
-                        <p>Vaata oma boti kasutamise statistikat</p>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                        <div class="server-card">
-                            <h3>Kasutajad kokku</h3>
-                            <p id="total-users">0</p>
-                        </div>
-                        <div class="server-card">
-                            <h3>Serverid kokku</h3>
-                            <p id="total-servers">0</p>
-                        </div>
-                        <div class="server-card">
-                            <h3>Käskude kasutused</h3>
-                            <p id="total-commands">0</p>
-                        </div>
-                        <div class="server-card">
-                            <h3>Online aeg</h3>
-                            <p id="uptime">0 tundi</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="support-tab" class="tab-content" style="display: none;">
-                    <div class="content-header">
-                        <h1>Toetus</h1>
-                        <p>Vajad abi? Võta meiega ühendust!</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <h3>Discordi tugiserver</h3>
-                        <p>Liitu meie Discordi serveriga, et saada kiiret abi ja olla kursis uuendustega.</p>
-                        <button class="btn btn-primary" style="margin-top: 1rem;">Liitu serveriga</button>
-                    </div>
-                </div>
-
-                <div id="premium-tab" class="tab-content" style="display: none;">
-                    <div class="content-header">
-                        <h1>Premium</h1>
-                        <p>Uurige meie Premium pakette rohkete funktsioonide jaoks</p>
-                    </div>
-                    
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <h3>Põhiplaan</h3>
-                            <p>Tasuta</p>
-                            <ul style="margin-top: 1rem; list-style-type: none;">
-                                <li>✓ Kuni 5 käsku</li>
-                                <li>✓ Põhilised modereerimisvahendid</li>
-                                <li>✓ 1 server</li>
-                            </ul>
-                            <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;">Praegune plaan</button>
-                        </div>
-                        <div class="feature-card">
-                            <h3>Premium</h3>
-                            <p>5€/kuus</p>
-                            <ul style="margin-top: 1rem; list-style-type: none;">
-                                <li>✓ Kõik käsud</li>
-                                <li>✓ Täielik modereerimine</li>
-                                <li>✓ Kuni 10 serverit</li>
-                                <li>✓ AI funktsioonid</li>
-                            </ul>
-                            <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Vali Premium</button>
-                        </div>
-                        <div class="feature-card">
-                            <h3>Enterprise</h3>
-                            <p>15€/kuus</p>
-                            <ul style="margin-top: 1rem; list-style-type: none;">
-                                <li>✓ Kõik Premium funktsioonid</li>
-                                <li>✓ Piiramatu arv servereid</li>
-                                <li>✓ Prioriteetne tugi</li>
-                                <li>✓ Kohandatud käsud</li>
-                            </ul>
-                            <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Vali Enterprise</button>
-                        </div>
-                    </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Söö ja jälgi</h3>
+                    <p>Söö arvutatud kogustes ja jälgi oma progressi profiilis.</p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <h2>Logi sisse</h2>
-            <p>Logi sisse oma Discordi kontoga, et hakata oma boti looma.</p>
-            <button class="discord-login-btn" id="discord-login">
-                <i class="fab fa-discord"></i> Logi sisse Discordiga
-            </button>
-            <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" id="close-modal">Tühista</button>
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Valmis oma keha muutma?</h2>
+            <p>Liitu täna ja saa personaalne toitumisplaan tasuta!</p>
+            <a href="register.html" class="btn-primary btn-large">Loo konto</a>
         </div>
-    </div>
+    </section>
 
-    <script>
-        // UI elements
-        const landingPage = document.getElementById('landing-page');
-        const dashboard = document.getElementById('dashboard');
-        const loginModal = document.getElementById('login-modal');
-        const loginBtn = document.getElementById('login-btn');
-        const createBotBtn = document.getElementById('create-bot-btn');
-        const heroCreateBot = document.getElementById('hero-create-bot');
-        const discordLogin = document.getElementById('discord-login');
-        const closeModal = document.getElementById('close-modal');
-        const backToHome = document.getElementById('back-to-home');
-        const addBotBtn = document.getElementById('add-bot-btn');
-        const loading = document.getElementById('loading');
-        const userInfo = document.getElementById('user-info');
-        const userAvatar = document.getElementById('user-avatar');
-        const username = document.getElementById('username');
-        const serverList = document.getElementById('server-list');
-        const popularCommands = document.getElementById('popular-commands');
-        const allCommands = document.getElementById('all-commands');
-        const saveSettingsBtn = document.getElementById('save-settings');
-        
-        // Andmebaasi simuleerimine (praktikas kasuta MongoDB-d)
-        let userData = {
-            loggedIn: false,
-            user: null,
-            bots: [],
-            settings: {}
-        };
-
-        // Event listeners
-        loginBtn.addEventListener('click', () => {
-            loginModal.style.display = 'flex';
-        });
-        
-        createBotBtn.addEventListener('click', () => {
-            loginModal.style.display = 'flex';
-        });
-        
-        heroCreateBot.addEventListener('click', () => {
-            loginModal.style.display = 'flex';
-        });
-        
-        discordLogin.addEventListener('click', () => {
-            // Päris Discord OAuth2 login
-            const clientId = '123456789012345678'; // Asenda oma päris clientId-ga
-            const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
-            const scope = encodeURIComponent('identify guilds bot applications.commands');
-            
-            // Suuname kasutaja Discordi OAuth2 lehele
-            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
-        });
-        
-        closeModal.addEventListener('click', () => {
-            loginModal.style.display = 'none';
-        });
-        
-        backToHome.addEventListener('click', () => {
-            dashboard.style.display = 'none';
-            landingPage.style.display = 'block';
-        });
-        
-        addBotBtn.addEventListener('click', () => {
-            createNewBot();
-        });
-
-        saveSettingsBtn.addEventListener('click', () => {
-            saveSettings();
-        });
-
-        // Tab navigation
-        document.querySelectorAll('.sidebar-menu a').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                // Eemalda aktiivne klass kõigilt
-                document.querySelectorAll('.sidebar-menu a').forEach(t => {
-                    t.classList.remove('active');
-                });
-                
-                // Lisa aktiivne klass valitud tabile
-                tab.classList.add('active');
-                
-                // Peida kõik tabid
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.style.display = 'none';
-                });
-                
-                // Näita valitud tabi
-                const tabId = `${tab.getAttribute('data-tab')}-tab`;
-                document.getElementById(tabId).style.display = 'block';
-            });
-        });
-
-        // Funktsioon uue boti loomiseks
-        function createNewBot() {
-            loading.style.display = 'block';
-            
-            // Simuleeri API kutset
-            setTimeout(() => {
-                const newBot = {
-                    id: Date.now(),
-                    name: 'Minu uus bot',
-                    serverCount: 0,
-                    commands: [],
-                    createdAt: new Date().toISOString()
-                };
-                
-                userData.bots.push(newBot);
-                updateDashboard();
-                loading.style.display = 'none';
-                
-                alert('Uus bot loodud edukalt!');
-            }, 1500);
-        }
-
-        // Funktsioon seadete salvestamiseks
-        function saveSettings() {
-            const prefix = document.getElementById('bot-prefix').value;
-            const language = document.getElementById('bot-language').value;
-            const logLevel = document.getElementById('log-level').value;
-            
-            userData.settings = {
-                prefix,
-                language,
-                logLevel
-            };
-            
-            // Simuleeri API kutset
-            setTimeout(() => {
-                alert('Seaded salvestatud edukalt!');
-            }, 1000);
-        }
-
-        // Funktsioon andmete uuendamiseks
-        function updateDashboard() {
-            // Kasutaja info
-            if (userData.user) {
-                userAvatar.src = userData.user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-                username.textContent = userData.user.username;
-            }
-            
-            // Serverite list
-            serverList.innerHTML = '';
-            if (userData.bots.length === 0) {
-                serverList.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-                        <h3>Sa pole veel ühtegi boti loonud</h3>
-                        <p>Alusta uue boti loomisega!</p>
-                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="createNewBot()">Loo esimene bot</button>
-                    </div>
-                `;
-            } else {
-                userData.bots.forEach(bot => {
-                    const serverCard = document.createElement('div');
-                    serverCard.className = 'server-card';
-                    serverCard.innerHTML = `
-                        <div class="server-icon">
-                            <i class="fab fa-discord"></i>
-                        </div>
-                        <h3>${bot.name}</h3>
-                        <p>${bot.commands ? bot.commands.length : 0} käsud aktiivsed</p>
-                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="manageBot(${bot.id})">Halda</button>
-                    `;
-                    serverList.appendChild(serverCard);
-                });
-            }
-            
-            // Populaarsed käsud
-            popularCommands.innerHTML = '';
-            const popularCommandsData = [
-                { name: 'Muusika mängija', icon: 'fas fa-music', color: '#57F287', enabled: true },
-                { name: 'Automaatne modereerimine', icon: 'fas fa-shield-alt', color: '#FEE75C', enabled: true },
-                { name: 'AI Vestlus', icon: 'fas fa-robot', color: '#5865F2', enabled: false }
-            ];
-            
-            popularCommandsData.forEach(cmd => {
-                const commandCard = createCommandCard(cmd);
-                popularCommands.appendChild(commandCard);
-            });
-            
-            // Kõik käsud
-            allCommands.innerHTML = '';
-            const allCommandsData = [
-                { name: 'Muusika mängija', icon: 'fas fa-music', color: '#57F287', enabled: true, description: 'Mängi muusikat otse YouTube\'ist, Spotify\'st või SoundCloud\'ist.' },
-                { name: 'Automaatne modereerimine', icon: 'fas fa-shield-alt', color: '#FEE75C', enabled: true, description: 'Automaatselt eemalda räiged sõnumid ja karista rikkujaid.' },
-                { name: 'AI Vestlus', icon: 'fas fa-robot', color: '#5865F2', enabled: false, description: 'Vestle AI-ga otse Discordis kasutades ChatGPT tehnoloogiat.' },
-                { name: 'Piletisüsteem', icon: 'fas fa-ticket-alt', color: '#EB459E', enabled: false, description: 'Loo automaatsed piletikanalid kasutajatoe jaoks.' },
-                { name: 'Rollide süsteem', icon: 'fas fa-user-tag', color: '#ED4245', enabled: true, description: 'Reaktsioonide põhised rollid ja automaatsed rollid.' },
-                { name: 'XP Süsteem', icon: 'fas fa-chart-line', color: '#57F287', enabled: true, description: 'Kasutajate taseme süsteem ja virtuaalne majandus.' }
-            ];
-            
-            allCommandsData.forEach(cmd => {
-                const commandCard = createCommandCard(cmd);
-                allCommands.appendChild(commandCard);
-            });
-            
-            // Statistika
-            document.getElementById('total-users').textContent = userData.bots.reduce((sum, bot) => sum + (bot.userCount || 0), 0);
-            document.getElementById('total-servers').textContent = userData.bots.reduce((sum, bot) => sum + (bot.serverCount || 0), 0);
-            document.getElementById('total-commands').textContent = userData.bots.reduce((sum, bot) => sum + (bot.commands ? bot.commands.length : 0), 0);
-            document.getElementById('uptime').textContent = '24 tundi';
-        }
-
-        // Funktsioon command cardi loomiseks
-        function createCommandCard(cmd) {
-            const commandCard = document.createElement('div');
-            commandCard.className = 'command-card';
-            commandCard.innerHTML = `
-                <div class="command-header">
-                    <div class="command-title">
-                        <i class="${cmd.icon}" style="color: ${cmd.color};"></i>
-                        <h3>${cmd.name}</h3>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" ${cmd.enabled ? 'checked' : ''} onchange="toggleCommand('${cmd.name}', this.checked)">
-                        <span class="slider"></span>
-                    </label>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3><i class="fas fa-apple-alt"></i> NutriPlan</h3>
+                    <p>Tark toitumiskava iga eestlase jaoks. Saavuta oma kaalueesmärk targalt!</p>
                 </div>
-                <p>${cmd.description}</p>
-                <div class="command-settings">
-                    <div class="setting-item">
-                        <label>Seade 1</label>
-                        <input type="text" value="Vaikimisi väärtus">
-                    </div>
-                    <div class="setting-item">
-                        <label>Seade 2</label>
-                        <select>
-                            <option>Valik 1</option>
-                            <option>Valik 2</option>
-                        </select>
-                    </div>
+                <div class="footer-col">
+                    <h3>Lingid</h3>
+                    <ul>
+                        <li><a href="index.html">Avaleht</a></li>
+                        <li><a href="recipes.html">Retseptid</a></li>
+                        <li><a href="mealplan.html">Toitumisplaan</a></li>
+                        <li><a href="weight.html">Kaalu jälgimine</a></li>
+                    </ul>
                 </div>
-                <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="toggleSettings(this)">Seaded</button>
-            `;
-            return commandCard;
-        }
+                <div class="footer-col">
+                    <h3>Kontakt</h3>
+                    <p><i class="fas fa-envelope"></i> info@nutriplan.ee</p>
+                    <p><i class="fas fa-phone"></i> +372 5555 5555</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 NutriPlan. Kõik õigused kaitstud.</p>
+            </div>
+        </div>
+    </footer>
 
-        // Funktsioon commandi sisse/välja lülitamiseks
-        function toggleCommand(commandName, enabled) {
-            // Simuleeri API kutset
-            console.log(`Command ${commandName} ${enabled ? 'enabled' : 'disabled'}`);
-            
-            // Salvesta andmebaasi (praktikas MongoDB-sse)
-            // fetch('/api/commands/toggle', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ command: commandName, enabled: enabled })
-            // });
-        }
-
-        // Funktsioon boti haldamiseks
-        function manageBot(botId) {
-            alert(`Haldad boti ID-ga: ${botId}`);
-            // Siin suunaksime tavaliselt eraldi boti halduslehele
-        }
-
-        // Funktsioon seadete näitamiseks/peitmiseks
-        function toggleSettings(button) {
-            const settings = button.parentElement.querySelector('.command-settings');
-            if (settings.style.display === 'block') {
-                settings.style.display = 'none';
-                button.textContent = 'Seaded';
-            } else {
-                settings.style.display = 'block';
-                button.textContent = 'Peida seaded';
-            }
-        }
-
-        // Lehe laadimisel kontrolli, kas kasutaja on juba sisse logitud
-        document.addEventListener('DOMContentLoaded', () => {
-            // Kontrolli URL-i parameetreid OAuth2 callbacki jaoks
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            
-            if (code) {
-                // Kui on OAuth2 kood, siis lõpeta sisselogimine
-                completeOAuthLogin(code);
-            } else {
-                // Kontrolli localStorage'ist, kas kasutaja on juba sisse logitud
-                const savedUserData = localStorage.getItem('botBuilderUserData');
-                if (savedUserData) {
-                    userData = JSON.parse(savedUserData);
-                    if (userData.loggedIn) {
-                        landingPage.style.display = 'none';
-                        dashboard.style.display = 'block';
-                        updateDashboard();
-                    }
-                }
-            }
-        });
-
-        // Funktsioon OAuth2 sisselogimise lõpetamiseks
-        function completeOAuthLogin(code) {
-            loading.style.display = 'block';
-            
-            // Simuleeri API kutset tokeni saamiseks ja kasutajaandmete pärimiseks
-            setTimeout(() => {
-                // Päris rakenduses saadaksid tokeni ja kasutajaandmed Discord API-st
-                userData = {
-                    loggedIn: true,
-                    user: {
-                        id: '123456789',
-                        username: 'KasutajaNimi',
-                        avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
-                        discriminator: '0001'
-                    },
-                    bots: [
-                        {
-                            id: 1,
-                            name: 'Minu esimene bot',
-                            serverCount: 3,
-                            userCount: 150,
-                            commands: ['music', 'moderation', 'fun'],
-                            createdAt: new Date().toISOString()
-                        }
-                    ],
-                    settings: {
-                        prefix: '!',
-                        language: 'et',
-                        logLevel: 'info'
-                    }
-                };
-                
-                // Salvesta andmed localStorage'i
-                localStorage.setItem('botBuilderUserData', JSON.stringify(userData));
-                
-                // Eemalda kood URL-ist
-                window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Näita dashboardit
-                landingPage.style.display = 'none';
-                dashboard.style.display = 'block';
-                updateDashboard();
-                loading.style.display = 'none';
-            }, 2000);
-        }
-
-        // Close modal when clicking outside
-        window.addEventListener('click', (e) => {
-            if (e.target === loginModal) {
-                loginModal.style.display = 'none';
-            }
-        });
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html>
